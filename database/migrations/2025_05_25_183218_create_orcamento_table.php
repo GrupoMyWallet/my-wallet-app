@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('valor', 12, 2);
             $table->timestamps();
 
-            $table->foreign('category_id')->references('id')->on('categories')->nullOnDelete();
+            $table->foreign('categoria_id')->references('id')->on('categorias')->nullOnDelete();
         });
     }
 

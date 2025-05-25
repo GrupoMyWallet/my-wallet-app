@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('tipo', ['despesa', 'receita']);
             $table->decimal('value', 12, 2);
             $table->string('descricao');
-            $table->unsignedBigInteger('category_id')->nullable();
+            $table->unsignedBigInteger('categoria_id')->nullable();
             $table->date('date');
             $table->enum('tipo_recorrencia', ['none', 'mensal', 'anual', 'diferente'])->default('none');
             $table->integer('recorrencia_diferente_meses')->nullable();
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->boolean('esta_ativa')->default(true);
             $table->timestamps();
 
-            $table->foreign('category_id')->references('id')->on('categories')->nullOnDelete();
+            $table->foreign('categoria_id')->references('id')->on('categorias')->nullOnDelete();
         });
     }
 

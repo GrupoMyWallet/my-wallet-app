@@ -1,25 +1,21 @@
 FROM php:8.2-apache
 
+# Instala o instalador de extensões PHP
 ADD https://raw.githubusercontent.com/mlocati/docker-php-extension-installer/master/install-php-extensions /usr/local/bin/
 RUN chmod uga+x /usr/local/bin/install-php-extensions && sync
 
-RUN apt-get update && apt-get install -y  \
+# Instala dependências e extensões
+RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libjpeg-dev \
     libpng-dev \
     libwebp-dev \
-    --no-install-recommends \
+    curl \
+    git \
+    zip unzip \
     && docker-php-ext-enable opcache \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql -j$(nproc) gd \
-    && apt-get autoclean -y \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
-      curl \
-      git \
-      zip unzip \
+    && docker-php-ext-install pcntl \
     && install-php-extensions \
       bcmath \
       bz2 \
@@ -42,20 +38,20 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
       sockets \
       iconv \
       mbstring \
-      && a2enmod rewrite
+    && apt-get autoclean -y && rm -rf /var/lib/apt/lists/*
 
-      # Enable headers module
-
+# Habilita módulos do Apache
 RUN a2enmod rewrite headers
 
-# Update apache conf to point to application public directory
+# Configura o diretório público do Laravel
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
     sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
+# Instala Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Update uploads config
+# Configurações de upload
 RUN echo "file_uploads = On\n" \
          "memory_limit = 1024M\n" \
          "upload_max_filesize = 512M\n" \
@@ -63,16 +59,16 @@ RUN echo "file_uploads = On\n" \
          "max_execution_time = 1200\n" \
          > /usr/local/etc/php/conf.d/uploads.ini
 
+# Define o ServerName do Apache
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-WORKDIR /var/www/html
-
-# Copia os arquivos do projeto
-COPY . .
-
-# Install Node.js and npm
+# Instala Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs
 
-# Update npm to the latest version
-RUN composer install && npm install npm@latest -g
+# Garante permissões corretas para cache e storage
+RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Define diretório de trabalho
+WORKDIR /var/www/html
