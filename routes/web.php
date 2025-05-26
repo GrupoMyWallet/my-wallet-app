@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\LancamentoController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -21,4 +22,13 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    Route::controller(LancamentoController::class)->group(function () {
+        Route::get('/lancamentos', 'index');
+        Route::post('/lancamentos', 'store');
+        Route::get('/lancamentos/{id}', 'show');
+        Route::put('/lancamentos/{id}', 'update');
+        Route::delete('/lancamentos/{id}', 'destroy');  
+    });
+
 });
