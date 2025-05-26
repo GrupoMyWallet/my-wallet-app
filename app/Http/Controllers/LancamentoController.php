@@ -3,8 +3,50 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Lancamento;
+use App\Models\Categoria;
+use Inertia\Inertia;
+use App\Http\Requests\StoreLancamentoRequest;
 
 class LancamentoController extends Controller
 {
-    //
+
+    public function index(Request $request)
+    {   
+        $lancamentos = Lancamento::all();
+
+        return Inertia::render('Lancamentos/Index', [
+            'lancamentos' => $lancamentos,
+        ]);
+    }
+
+    public function create()
+    {   
+        
+        $categorias = Categoria::select('id', 'nome')->get();
+        $user = Auth::user();
+
+        return Inertia::render('Lancamentos/Create', [
+            'user' => $user,
+            'categorias' => $categorias
+        ]);
+    }
+
+    public function show(Request $request): Response
+    {
+        return Inertia::render('Lancamentos/Show', [
+            'sessions' => $this->sessions($request)->all(),
+        ]);
+    }
+
+    public function store(StoreLancamentoRequest $request)
+    {
+        $lancamento_validado = $request->validated();
+
+        Lancamento::create($lancamento_validado);
+
+        return response()->json(['message' => 'Lançamento criado com sucesso']);
+    }
+
 }

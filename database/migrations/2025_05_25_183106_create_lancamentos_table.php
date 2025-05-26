@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->enum('tipo', ['despesa', 'receita']);
-            $table->decimal('value', 12, 2);
+            $table->decimal('valor', 12, 2);
             $table->string('descricao');
             $table->unsignedBigInteger('categoria_id')->nullable();
             $table->date('date');

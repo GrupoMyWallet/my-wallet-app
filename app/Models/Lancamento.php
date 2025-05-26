@@ -14,7 +14,7 @@ class Lancamento extends Model
     protected $table = 'lancamentos';
 
     protected $fillable = [
-        'user_id', 'tipo', 'valor', 'descricao', 'categoria', 'data',
+        'user_id', 'tipo', 'valor', 'descricao', 'categoria_id', 'date',
         'tipo_recorrencia', 'recorrencia_diferente_meses', 'fim_da_recorrencia', 'esta_ativa'
     ];
 
