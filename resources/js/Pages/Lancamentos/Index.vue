@@ -14,7 +14,5 @@ const props = defineProps({
                 Dashboard
             </h2>
         </template>
-        {{ lancamentos }}
-        
     </AppLayout>
 </template>

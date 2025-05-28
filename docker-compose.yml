@@ -19,7 +19,8 @@ services:
       - "8000:80"
     depends_on:
       - db
-    command: bash -c "chown -R www-data:www-data storage bootstrap/cache && apache2-foreground"
+    command: bash -c "chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache && apache2-foreground"
+
 
   vite:
     image: node:20

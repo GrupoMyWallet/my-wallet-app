@@ -24,14 +24,12 @@ RUN apt-get update && apt-get install -y \
       gd \
       intl \
       ldap \
-      mcrypt \
       memcached \
       mysqli \
       opcache \
       pdo_mysql \
       pdo_pgsql \
       pgsql \
-      redis \
       soap \
       xsl \
       zip \

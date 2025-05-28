@@ -21,15 +21,22 @@ class LancamentoController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {   
-        
+
+        $lancamentos = [];
+
+        if($request){
+            $lancamentos = $request;            
+        }
+
         $categorias = Categoria::select('id', 'nome')->get();
         $user = Auth::user();
 
         return Inertia::render('Lancamentos/Create', [
             'user' => $user,
-            'categorias' => $categorias
+            'categorias' => $categorias,
+            'lancamentos' => $lancamentos,
         ]);
     }
 
@@ -46,7 +53,6 @@ class LancamentoController extends Controller
 
         Lancamento::create($lancamento_validado);
 
-        return response()->json(['message' => 'Lançamento criado com sucesso']);
+        return redirect()->route('lancamentos.index');
     }
-
 }
