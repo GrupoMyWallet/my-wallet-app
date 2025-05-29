@@ -49,9 +49,15 @@ class LancamentoController extends Controller
 
     public function store(StoreLancamentoRequest $request)
     {
-        $lancamento_validado = $request->validated();
+        $lancamentos = $request->validated()['lancamentos'];
 
-        Lancamento::create($lancamento_validado);
+        $lancamentos = array_map(function ($lancamento) {
+            $lancamento['created_at'] = now();
+            $lancamento['updated_at'] = now();
+            return $lancamento;
+        }, $lancamentos);
+        
+        Lancamento::insert($lancamentos);
 
         return redirect()->route('lancamentos.index');
     }

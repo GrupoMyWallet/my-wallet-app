@@ -26,7 +26,7 @@ Route::middleware([
     Route::controller(LancamentoController::class)->group(function () {
         Route::get('/lancamentos', 'index')->name('lancamentos.index');
         Route::get('/lancamentos/create', 'create');
-        Route::post('/lancamentos', 'store');
+        Route::post('/lancamentos', 'store')->name('lancamentos.store');
         Route::get('/lancamentos/{id}', 'show');
         Route::put('/lancamentos/{id}', 'update');
         Route::delete('/lancamentos/{id}', 'destroy');  

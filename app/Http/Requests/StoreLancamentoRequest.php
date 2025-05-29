@@ -23,22 +23,23 @@ class StoreLancamentoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'exists:users,id'],
-            'tipo' => ['required', Rule::in(['despesa', 'receita'])],
-            'valor' => ['required', 'numeric', 'min:0'],
-            'descricao' => ['required', 'string', 'max:255'],
-            'categoria_id' => ['required', 'integer', 'exists:categorias,id'],
-            'date' => ['required', 'date'],
-            'tipo_recorrencia' => ['nullable', Rule::in(['mensal', 'anual', 'diferente'])],
-            'recorrencia_diferente_meses' => [
+            'lancamentos' => ['required', 'array', 'min:1'],
+
+            'lancamentos.*.user_id' => ['required', 'exists:users,id'],
+            'lancamentos.*.tipo' => ['required', Rule::in(['despesa', 'receita'])],
+            'lancamentos.*.valor' => ['required', 'numeric', 'min:0'],
+            'lancamentos.*.descricao' => ['required', 'string', 'max:255'],
+            'lancamentos.*.categoria_id' => ['required', 'integer', 'exists:categorias,id'],
+            'lancamentos.*.date' => ['required', 'date'],
+            'lancamentos.*.tipo_recorrencia' => ['nullable', Rule::in(['none', 'mensal', 'anual', 'diferente'])],
+            'lancamentos.*.recorrencia_diferente_meses' => [
                 'nullable',
                 'integer',
                 'min:1',
-                'required_if:tipo_recorrencia,diferente',
+                'required_if:lancamentos.*.tipo_recorrencia,diferente',
             ],
-            'fim_da_recorrencia' => ['nullable', 'date', 'after_or_equal:data'],
-            'esta_ativa' => ['boolean'],
+            'lancamentos.*.fim_da_recorrencia' => ['nullable', 'date'],
+            'lancamentos.*.esta_ativa' => ['boolean'],
         ];
-
     }
 }
