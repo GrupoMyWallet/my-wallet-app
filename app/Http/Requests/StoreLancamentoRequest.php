@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\Lancamento;
 
 class StoreLancamentoRequest extends FormRequest
 {
@@ -22,24 +23,36 @@ class StoreLancamentoRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'lancamentos' => ['required', 'array', 'min:1'],
+        
+        $base = Lancamento::rules();
+        $rules = ['lancamentos' => 'required|array|min:1'];
+        foreach ($base as $campo => $regra) {
+            $rules["lancamentos.*.$campo"] = $regra;
+        }
+        return $rules;
+    }
 
-            'lancamentos.*.user_id' => ['required', 'exists:users,id'],
-            'lancamentos.*.tipo' => ['required', Rule::in(['despesa', 'receita'])],
-            'lancamentos.*.valor' => ['required', 'numeric', 'min:0'],
-            'lancamentos.*.descricao' => ['required', 'string', 'max:255'],
-            'lancamentos.*.categoria_id' => ['required', 'integer', 'exists:categorias,id'],
-            'lancamentos.*.date' => ['required', 'date'],
-            'lancamentos.*.tipo_recorrencia' => ['nullable', Rule::in(['none', 'mensal', 'anual', 'diferente'])],
-            'lancamentos.*.recorrencia_diferente_meses' => [
-                'nullable',
-                'integer',
-                'min:1',
-                'required_if:lancamentos.*.tipo_recorrencia,diferente',
-            ],
-            'lancamentos.*.fim_da_recorrencia' => ['nullable', 'date'],
-            'lancamentos.*.esta_ativa' => ['boolean'],
-        ];
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        $base = Lancamento::messages();
+        $messages = [];
+    
+        foreach ($base as $rule => $msg) {
+            if (strpos($rule, 'lancamentos.') === 0) {
+                $messages[$rule] = $msg;
+            } else {
+                $messages["lancamentos.*.$rule"] = $msg;
+            }
+        }
+    
+        $messages['lancamentos.required'] = 'Adicione pelo menos um lançamento.';
+        $messages['lancamentos.array'] = 'Os lançamentos devem ser enviados em formato de lista.';
+    
+        return $messages;
     }
 }

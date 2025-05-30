@@ -2,16 +2,13 @@
 
 namespace App\Repositories;
 
-use App\Models\Categoria;
+use App\Models\Lancamento;
 
-class CategoriaRepository
+class LancamentoRepository
 {
-    public function getCategoriasDoUsuario($userId)
+    public function getLancamentosDoUsuarioWithCategoria($userId)
     {
-        return Categoria::where(function ($query) use ($userId) {
-            $query->where('user_id', $userId)
-            ->orWhereNull('user_id');      
-        })->get();
+        return Lancamento::with('categoria:id,nome')->where('user_id', $userId)->get();
     }
 
     public function getCategoriasComOrçamento(int $userId)

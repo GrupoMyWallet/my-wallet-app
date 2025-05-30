@@ -28,10 +28,9 @@ Route::middleware([
 
     Route::controller(LancamentoController::class)->group(function () {
         Route::get('/lancamentos', 'index')->name('lancamentos.index');
-        Route::get('/lancamentos/create', 'create');
+        Route::get('/lancamentos/create', 'create')->name('lancamentos.create');
         Route::post('/lancamentos', 'store')->name('lancamentos.store');
-        Route::get('/lancamentos/{id}', 'show');
-        Route::put('/lancamentos/{id}', 'update');
+        Route::put('/lancamentos/{id}', 'update')->name('lancamentos.update');
         Route::delete('/lancamentos/{id}', 'destroy');  
     });
 
@@ -45,7 +44,6 @@ Route::middleware([
 
     Route::controller(MetaController::class)->group(function () {
         Route::get('/metas', 'index')->name('metas.index');
-        Route::get('/metas', 'create')->name('metas.create');
         Route::post('/metas', 'store')->name('metas.store');
         Route::get('/metas/{id}', 'show');
         Route::put('/metas/{id}', 'update');

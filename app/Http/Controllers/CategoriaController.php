@@ -23,7 +23,7 @@ class CategoriaController extends Controller
 
         $userId = $request->user()->id;
 
-        $categorias = $this->categoriaRepository->getCategoriasDoUsuario($userId);
+        $categorias = $this->categoriaRepository->getCategoriasComOrçamento($userId);
     
         return Inertia::render('Categorias/Index', [
             'categorias' => $categorias,

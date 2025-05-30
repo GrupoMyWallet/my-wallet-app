@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('titulo');
-            $table->string('descricao');
+            $table->text('descricao');
             $table->decimal('valor_a_alcancar', 12, 2);
             $table->decimal('valor_atual', 12, 2)->default(0);
             $table->date('data_final')->nullable();
-            $table->enum('status', ['andamento', 'completa', 'cancelada'])->default('pendente');
+            $table->enum('status', ['andamento', 'completa', 'cancelada'])->default('andamento');
             $table->timestamps();
         });
     }

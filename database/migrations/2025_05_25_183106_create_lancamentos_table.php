@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('valor', 12, 2);
             $table->string('descricao');
             $table->unsignedBigInteger('categoria_id')->nullable();
-            $table->date('date');
+            $table->date('data');
             $table->enum('tipo_recorrencia', ['none', 'mensal', 'anual', 'diferente'])->default('none');
             $table->integer('recorrencia_diferente_meses')->nullable();
             $table->date('fim_da_recorrencia')->nullable();

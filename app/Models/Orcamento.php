@@ -22,7 +22,7 @@ class Orcamento extends Model
         'user_id', 'categoria_id', 'ano', 'mes', 'valor'
     ];
 
-    public function categoria()
+    public function categorias()
     {
         return $this->belongsTo(Categoria::class);
     }

@@ -1,64 +1,61 @@
 <script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import Welcome from '@/Components/Welcome.vue';
-import { useForm } from '@inertiajs/vue3'
-
+import AppLayout from "@/Layouts/AppLayout.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+import Welcome from "@/Components/Welcome.vue";
+import { useForm } from "@inertiajs/vue3";
 
 const props = defineProps({
     categorias: Array,
     user: Object,
-})
+});
 
 const form = useForm({
     lancamentos: [
-        {   
+        {
             user_id: props.user.id,
-            tipo: 'despesa',
+            tipo: "despesa",
             valor: null,
-            descricao: '',
-            categoria_id: '',
-            date: '',
-            tipo_recorrencia: 'none',
+            descricao: "",
+            categoria_id: "",
+            date: "",
+            tipo_recorrencia: "none",
             recorrencia_diferente_meses: null,
-            fim_da_recorrencia: '',
-            esta_ativa: true
-        }
-    ]
-})
+            fim_da_recorrencia: "",
+            esta_ativa: true,
+        },
+    ],
+});
 
 const addLancamento = () => {
     form.lancamentos.push({
         user_id: props.user.id,
-        tipo: '',
+        tipo: "",
         valor: null,
-        descricao: '',
-        categoria_id: '',
-        date: '',
-        tipo_recorrencia: 'none',
+        descricao: "",
+        categoria_id: "",
+        date: "",
+        tipo_recorrencia: "none",
         recorrencia_diferente_meses: null,
-        fim_da_recorrencia: '',
-        esta_ativa: true
-    })
-}
+        fim_da_recorrencia: "",
+        esta_ativa: true,
+    });
+};
 
 const removeLancamento = (index) => {
-    form.lancamentos.splice(index, 1)
-}
+    form.lancamentos.splice(index, 1);
+};
 
 const submit = () => {
-    form.post('/lancamentos', {
+    form.post("/lancamentos", {
         onError: (errors) => {
-            console.error('Erros do backend:', errors);
-    }
-})
-}
-
+            console.error("Erros do backend:", errors);
+        },
+    });
+};
 </script>
 
 <template>
     <AppLayout title="Lançamentos">
-
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Registrar lançamentos
@@ -70,7 +67,9 @@ const submit = () => {
                 <div v-for="(lancamento, index) in form.lancamentos" :key="index"
                     class="border rounded-xl p-4 mb-6 shadow-sm bg-white space-y-4">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-semibold text-lg">Lançamento {{ index + 1 }}</h3>
+                        <h3 class="font-semibold text-lg">
+                            Lançamento {{ index + 1 }}
+                        </h3>
                         <button type="button" class="text-red-600 hover:underline text-sm"
                             v-if="form.lancamentos.length > 1" @click="removeLancamento(index)">
                             Remover
@@ -92,7 +91,8 @@ const submit = () => {
 
                         <div>
                             <label class="block text-sm font-medium mb-1">Valor</label>
-                            <input v-model="lancamento.valor" type="number" step="0.01"
+                            <input v-model="lancamento.valor" v-mask-decimal
+                            placeholder="0.00" type="number" step="0.01"
                                 class="w-full border rounded px-3 py-2" />
                             <p v-if="form.errors[`lancamentos.${index}.valor`]" class="text-sm text-red-600 mt-1">
                                 {{ form.errors[`lancamentos.${index}.valor`] }}
@@ -102,8 +102,16 @@ const submit = () => {
                         <div>
                             <label class="block text-sm font-medium mb-1">Descrição</label>
                             <input v-model="lancamento.descricao" type="text" class="w-full border rounded px-3 py-2" />
-                            <p v-if="form.errors[`lancamentos.${index}.descricao`]" class="text-sm text-red-600 mt-1">
-                                {{ form.errors[`lancamentos.${index}.descricao`] }}
+                            <p v-if="
+                                form.errors[
+                                `lancamentos.${index}.descricao`
+                                ]
+                            " class="text-sm text-red-600 mt-1">
+                                {{
+                                    form.errors[
+                                    `lancamentos.${index}.descricao`
+                                    ]
+                                }}
                             </p>
                         </div>
 
@@ -111,12 +119,20 @@ const submit = () => {
                             <label class="block text-sm font-medium mb-1">Categoria</label>
                             <select v-model="lancamento.categoria_id" class="w-full border rounded px-3 py-2">
                                 <option value="">Selecione</option>
-                                <option v-for="cat in props.categorias" :key="cat.id" :value="cat.id">{{ cat.nome }}
+                                <option v-for="cat in props.categorias" :key="cat.id" :value="cat.id">
+                                    {{ cat.nome }}
                                 </option>
                             </select>
-                            <p v-if="form.errors[`lancamentos.${index}.categoria_id`]"
-                                class="text-sm text-red-600 mt-1">
-                                {{ form.errors[`lancamentos.${index}.categoria_id`] }}
+                            <p v-if="
+                                form.errors[
+                                `lancamentos.${index}.categoria_id`
+                                ]
+                            " class="text-sm text-red-600 mt-1">
+                                {{
+                                    form.errors[
+                                    `lancamentos.${index}.categoria_id`
+                                    ]
+                                }}
                             </p>
                         </div>
                     </div>
@@ -124,9 +140,10 @@ const submit = () => {
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                         <div>
                             <label class="block text-sm font-medium mb-1">Data</label>
-                            <input v-model="lancamento.date" type="date" class="w-full border rounded px-3 py-2" />
-                            <p v-if="form.errors[`lancamentos.${index}.date`]" class="text-sm text-red-600 mt-1">
-                                {{ form.errors[`lancamentos.${index}.date`] }}
+                            <input v-model="lancamento.data" type="text" v-mask-date placeholder="dd/mm/aaaa"
+                                class="w-full border rounded px-3 py-2" />
+                            <p v-if="form.errors[`lancamentos.${index}.data`]" class="text-sm text-red-600 mt-1">
+                                {{ form.errors[`lancamentos.${index}.data`] }}
                             </p>
                         </div>
 
@@ -138,9 +155,16 @@ const submit = () => {
                                 <option value="anual">Anual</option>
                                 <option value="diferente">Diferente</option>
                             </select>
-                            <p v-if="form.errors[`lancamentos.${index}.tipo_recorrencia`]"
-                                class="text-sm text-red-600 mt-1">
-                                {{ form.errors[`lancamentos.${index}.tipo_recorrencia`] }}
+                            <p v-if="
+                                form.errors[
+                                `lancamentos.${index}.tipo_recorrencia`
+                                ]
+                            " class="text-sm text-red-600 mt-1">
+                                {{
+                                    form.errors[
+                                    `lancamentos.${index}.tipo_recorrencia`
+                                    ]
+                                }}
                             </p>
                         </div>
 
@@ -148,19 +172,36 @@ const submit = () => {
                             <label class="block text-sm font-medium mb-1">Recorrência Diferente (meses)</label>
                             <input v-model="lancamento.recorrencia_diferente_meses" type="number"
                                 class="w-full border rounded px-3 py-2" />
-                            <p v-if="form.errors[`lancamentos.${index}.recorrencia_diferente_meses`]"
-                                class="text-sm text-red-600 mt-1">
-                                {{ form.errors[`lancamentos.${index}.recorrencia_diferente_meses`] }}
+                            <p v-if="
+                                form.errors[
+                                `lancamentos.${index}.recorrencia_diferente_meses`
+                                ]
+                            " class="text-sm text-red-600 mt-1">
+                                {{
+                                    form.errors[
+                                    `lancamentos.${index}.recorrencia_diferente_meses`
+                                    ]
+                                }}
                             </p>
                         </div>
 
-                        <div v-if="lancamento.tipo_recorrencia && lancamento.tipo_recorrencia !== ''">
+                        <div v-if="
+                            lancamento.tipo_recorrencia &&
+                            lancamento.tipo_recorrencia !== ''
+                        ">
                             <label class="block text-sm font-medium mb-1">Fim da Recorrência</label>
                             <input v-model="lancamento.fim_da_recorrencia" type="date"
                                 class="w-full border rounded px-3 py-2" />
-                            <p v-if="form.errors[`lancamentos.${index}.fim_da_recorrencia`]"
-                                class="text-sm text-red-600 mt-1">
-                                {{ form.errors[`lancamentos.${index}.fim_da_recorrencia`] }}
+                            <p v-if="
+                                form.errors[
+                                `lancamentos.${index}.fim_da_recorrencia`
+                                ]
+                            " class="text-sm text-red-600 mt-1">
+                                {{
+                                    form.errors[
+                                    `lancamentos.${index}.fim_da_recorrencia`
+                                    ]
+                                }}
                             </p>
                         </div>
 
@@ -170,23 +211,19 @@ const submit = () => {
                             <label :for="`ativa-${index}`" class="text-sm font-medium">Está ativa</label>
                         </div>
                     </div>
-
                 </div>
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                        <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
                         @click="addLancamento">
                         + Adicionar Lançamento
                     </button>
 
-                    <button type="submit" :disabled="form.processing" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                    <button type="submit" :disabled="form.processing"
+                        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
                         Salvar Todos
                     </button>
                 </div>
             </form>
-
-
-            
         </div>
     </AppLayout>
-
 </template>

@@ -8,16 +8,27 @@ use App\Models\Lancamento;
 use App\Models\Categoria;
 use Inertia\Inertia;
 use App\Http\Requests\StoreLancamentoRequest;
+use App\Http\Requests\UpdateLancamentoRequest;
+use App\Repositories\LancamentoRepository;
+use App\Repositories\CategoriaRepository;
 
 class LancamentoController extends Controller
 {
+    public function __construct(CategoriaRepository $categoriaRepository, LancamentoRepository $lancamentoRepository)
+    {
+        $this->categoriaRepository = $categoriaRepository;
+        $this->lancamentoRepository = $lancamentoRepository;
+    }
 
     public function index(Request $request)
     {   
-        $lancamentos = Lancamento::all();
+        $userId = $request->user()->id;
+        $lancamentos = $this->lancamentoRepository->getLancamentosDoUsuarioWithCategoria($userId);
+        $categorias = $this->categoriaRepository->getCategoriasDoUsuario($userId);
 
         return Inertia::render('Lancamentos/Index', [
             'lancamentos' => $lancamentos,
+            'categorias' => $categorias
         ]);
     }
 
@@ -48,17 +59,31 @@ class LancamentoController extends Controller
     }
 
     public function store(StoreLancamentoRequest $request)
-    {
-        $lancamentos = $request->validated()['lancamentos'];
-
+    {   
+        
+        $lancamentos_validados = $request->validated();
+    
         $lancamentos = array_map(function ($lancamento) {
+            $lancamento['user_id'] = auth()->id();
             $lancamento['created_at'] = now();
             $lancamento['updated_at'] = now();
             return $lancamento;
-        }, $lancamentos);
+        }, $lancamentos_validados['lancamentos']);
         
         Lancamento::insert($lancamentos);
 
+        return redirect()->route('lancamentos.index');
+    }
+
+    public function update(UpdateLancamentoRequest $request, $id)
+    {   
+        
+        $lancamento_validado = $request->validated();
+
+        $lancamento = Lancamento::findOrFail($id);
+
+        $lancamento->update($lancamento_validado);
+    
         return redirect()->route('lancamentos.index');
     }
 }

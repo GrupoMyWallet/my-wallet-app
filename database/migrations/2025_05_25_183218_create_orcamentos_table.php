@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orcamento', function (Blueprint $table) {
+        Schema::create('orcamentos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('categoria_id')->nullable();
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orcamento');
+        Schema::dropIfExists('orcamentos');
     }
 };
