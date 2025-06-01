@@ -2,9 +2,9 @@
 
 namespace App\Repositories;
 
-use App\Models\Categoria;
+use App\Models\Orcamento;
 
-class CategoriaRepository
+class OrcamentoRepository
 {
     public function getCategoriasDoUsuario($userId)
     {
@@ -21,10 +21,5 @@ class CategoriaRepository
                         ->orWhereNull('user_id')
                         ->orderBy('nome')
                         ->get();
-    }
-
-    public function findOrFail($id)
-    {
-        return Categoria::findOrFail($id);
     }
 }

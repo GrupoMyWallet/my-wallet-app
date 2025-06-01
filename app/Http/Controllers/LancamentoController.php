@@ -15,6 +15,9 @@ use App\Repositories\CategoriaRepository;
 
 class LancamentoController extends Controller
 {
+    protected $categoriaRepository;
+    protected $lancamentoRepository;
+
     public function __construct(CategoriaRepository $categoriaRepository, LancamentoRepository $lancamentoRepository)
     {
         $this->categoriaRepository = $categoriaRepository;

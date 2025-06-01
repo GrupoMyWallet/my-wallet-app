@@ -14,16 +14,14 @@ return new class extends Migration
         Schema::create('orcamentos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->unsignedBigInteger('categoria_id')->nullable();
-            $table->integer('mes');
+            $table->foreignId('categoria_id')->constrained()->onDelete('cascade');
+            $table->enum('tipo', ['anual', 'mensal_padrao', 'mensal_excecao']);
             $table->integer('ano');
-            $table->decimal('valor', 12, 2);
+            $table->integer('mes')->nullable(); 
+            $table->decimal('valor', 15, 2);
             $table->timestamps();
-
-            $table->foreign('categoria_id')->references('id')->on('categorias')->nullOnDelete();
         });
     }
-
     /**
      * Reverse the migrations.
      */

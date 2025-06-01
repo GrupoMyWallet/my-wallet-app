@@ -19,10 +19,10 @@ class Orcamento extends Model
     * @var array<int, string>
     */
     protected $fillable = [
-        'user_id', 'categoria_id', 'ano', 'mes', 'valor'
+        'user_id', 'tipo', 'categoria_id', 'ano', 'mes', 'valor'
     ];
 
-    public function categorias()
+    public function categoria()
     {
         return $this->belongsTo(Categoria::class);
     }
