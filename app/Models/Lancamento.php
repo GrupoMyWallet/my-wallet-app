@@ -14,8 +14,12 @@ class Lancamento extends Model
     protected $table = 'lancamentos';
 
     protected $fillable = [
-        'user_id', 'tipo', 'valor', 'descricao', 'categoria_id', 'date',
+        'user_id', 'tipo', 'valor', 'descricao', 'categoria_id', 'data',
         'tipo_recorrencia', 'recorrencia_diferente_meses', 'fim_da_recorrencia', 'esta_ativa'
+    ];
+
+    protected $casts = [
+        'data' => 'date:d/m/Y',
     ];
 
     public function isDespesa() { return $this->type === 'despesa'; }
@@ -64,8 +68,9 @@ class Lancamento extends Model
 
             'categoria_id.exists' => 'A categoria selecionada não existe.',
 
-            'date.required' => 'A data é obrigatória.',
-            'date.date' => 'Informe uma data válida.',
+            'data.required' => 'A data é obrigatória.',
+            'data.date' => 'Informe uma data válida.',
+            'data.date.date_format' => 'A data deve estar no formato d/m/ano.',
 
             'tipo_recorrencia.required' => 'O tipo de recorrência é obrigatório.',
             'tipo_recorrencia.in' => 'Tipo de recorrência inválido.',

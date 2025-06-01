@@ -12,36 +12,11 @@ defineProps({
     <div class="relative min-h-screen flex flex-col bg-gradient-to-br from-[#FDF6F0] via-white to-[#E7ECFF] dark:from-[#181F2A] dark:via-[#181D27] dark:to-[#202237]">
         <!-- HEADER -->
         <header class="absolute top-0 left-0 w-full z-20 px-4 py-6 sm:px-8">
-            <div class="grid grid-cols-2 items-center gap-2 lg:grid-cols-3">
-                <div />
+            
                 <div class="flex justify-center lg:col-start-2">
                     <MyWalletLogo color="text-white"/>
                 </div>
-                <nav v-if="canLogin" class="flex flex-1 justify-end gap-2">
-                    <Link
-                        v-if="$page.props.auth.user"
-                        :href="route('dashboard')"
-                        class="rounded-lg px-4 py-2 text-gray-900 font-semibold shadow-none bg-white/60 backdrop-blur ring-1 ring-gray-200 hover:bg-[#FF2D20] hover:text-white transition dark:bg-white/10 dark:text-white dark:ring-0 dark:hover:bg-[#FF2D20]"
-                    >
-                        Dashboard
-                    </Link>
-                    <template v-else>
-                        <Link
-                            :href="route('login')"
-                            class="rounded-lg px-4 py-2 text-gray-900 font-semibold shadow-none bg-white/60 backdrop-blur ring-1 ring-gray-200 hover:bg-[#FF2D20] hover:text-white transition dark:bg-white/10 dark:text-white dark:ring-0 dark:hover:bg-[#FF2D20]"
-                        >
-                            Log in
-                        </Link>
-                        <Link
-                            v-if="canRegister"
-                            :href="route('register')"
-                            class="rounded-lg px-4 py-2 text-gray-900 font-semibold shadow-none bg-white/60 backdrop-blur ring-1 ring-gray-200 hover:bg-[#FF2D20] hover:text-white transition dark:bg-white/10 dark:text-white dark:ring-0 dark:hover:bg-[#FF2D20]"
-                        >
-                            Register
-                        </Link>
-                    </template>
-                </nav>
-            </div>
+            
         </header>
 
         <!-- HERO SECTION -->
@@ -74,7 +49,7 @@ defineProps({
 
         <!-- FOOTER -->
         <footer class="w-full text-center py-6 text-sm text-gray-500 dark:text-gray-400">
-            © {{ new Date().getFullYear() }} MyApp. Todos os direitos reservados.
+            © {{ new Date().getFullYear() }} MyWallet. Todos os direitos reservados.
         </footer>
     </div>
 </template>

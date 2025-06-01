@@ -152,14 +152,21 @@ const logout = () => {
                             :alt="$page.props.auth.user.name" />
                         <span class="truncate">{{ $page.props.auth.user.name }}</span>
                         <svg class="ml-auto h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            <path 
+                                stroke-linecap="round" 
+                                stroke-linejoin="round" 
+                                stroke-width="2"
+                                :d="showProfileDropdown 
+                                    ? 'M19 9l-7 7-7-7'  // seta para baixo
+                                    : 'M19 15l-7-7-7 7'" 
+                            />
                         </svg>
                     </button>
                     <!-- Dropdown abrindo para cima -->
                     <transition name="fade-up">
                         <div v-if="showProfileDropdown" id="profile-dropdown"
-                            class="absolute left-0 right-0 bottom-full mb-2 z-50 rounded-xl bg-white shadow-lg py-2">
-                            <DropdownLink :href="route('profile.show')">Profile</DropdownLink>
+                            class="absolute left-0 right-0 bottom-full mb-2 z-50 rounded-xl bg-gray-100 shadow-lg py-2">
+                            <DropdownLink :href="route('profile.show')">Perfil do Usuário</DropdownLink>
                             <DropdownLink v-if="$page.props.jetstream.hasApiFeatures" :href="route('api-tokens.index')">
                                 API Tokens</DropdownLink>
                             <div class="border-t mx-2 my-2"></div>

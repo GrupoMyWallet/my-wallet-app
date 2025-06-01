@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Lancamento;
 use App\Models\Categoria;
 use Inertia\Inertia;
+use Carbon\Carbon;
 use App\Http\Requests\StoreLancamentoRequest;
 use App\Http\Requests\UpdateLancamentoRequest;
 use App\Repositories\LancamentoRepository;
@@ -62,8 +63,9 @@ class LancamentoController extends Controller
     {   
         
         $lancamentos_validados = $request->validated();
-    
+        
         $lancamentos = array_map(function ($lancamento) {
+            $lancamento['data'] = Carbon::createFromFormat('d/m/Y', $lancamento['data'])->format('Y-m-d');
             $lancamento['user_id'] = auth()->id();
             $lancamento['created_at'] = now();
             $lancamento['updated_at'] = now();
@@ -72,18 +74,43 @@ class LancamentoController extends Controller
         
         Lancamento::insert($lancamentos);
 
-        return redirect()->route('lancamentos.index');
+        return redirect()->route('lancamentos.index')->with('success', 'Lançamentos registrados com sucesso!');
     }
 
     public function update(UpdateLancamentoRequest $request, $id)
     {   
+        try {
+            $lancamento_validado = $request->validated();
+            $lancamento_validado['data'] = Carbon::createFromFormat('d/m/Y', $lancamento_validado['data'])->format('Y-m-d');
+
+            $lancamento = Lancamento::findOrFail($id);
+            $lancamento->update($lancamento_validado);
+
+            return redirect()->route('lancamentos.index')->with('success', 'Lançamento atualizado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            
+            return redirect()->route('lancamentos.index')->with('error', 'Não foi possível atualizar o lançamento. Tente novamente mais tarde.');
+        }
         
-        $lancamento_validado = $request->validated();
-
-        $lancamento = Lancamento::findOrFail($id);
-
-        $lancamento->update($lancamento_validado);
     
-        return redirect()->route('lancamentos.index');
+        
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $lancamento = Lancamento::findOrFail($id);
+            $lancamento->delete();
+    
+            return redirect()->route('lancamentos.index')->with('success', 'Lançamento excluído com sucesso!');
+        } catch (\Exception $e) {
+            // Você pode logar o erro se quiser
+            // \Log::error("Erro ao excluir lançamento: " . $e->getMessage());
+    
+            return redirect()->route('lancamentos.index')->with('error', 'Não foi possível excluir o lançamento. Tente novamente mais tarde.');
+        }
     }
 }

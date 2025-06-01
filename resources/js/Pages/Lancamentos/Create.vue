@@ -1,8 +1,11 @@
 <script setup>
 import AppLayout from "@/Layouts/AppLayout.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import Welcome from "@/Components/Welcome.vue";
+
+import { watchEffect } from 'vue'
 import { useForm } from "@inertiajs/vue3";
+import TextInput from '@/Components/TextInput.vue'
+import InputError from '@/Components/InputError.vue'
+import InputLabel from '@/Components/InputLabel.vue'
 
 const props = defineProps({
     categorias: Array,
@@ -52,6 +55,18 @@ const submit = () => {
         },
     });
 };
+
+watchEffect(() => {
+  form.lancamentos.forEach((lancamento) => {
+    if (lancamento.tipo_recorrencia === 'none' && lancamento.fim_da_recorrencia) {
+      lancamento.fim_da_recorrencia = ''
+    }
+    if (lancamento.tipo_recorrencia !== 'diferente' && lancamento.recorrencia_diferente_meses) {
+      lancamento.recorrencia_diferente_meses = null
+    }
+  })
+})
+
 </script>
 
 <template>
@@ -78,138 +93,125 @@ const submit = () => {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-sm font-medium mb-1">Tipo</label>
-                            <select v-model="lancamento.tipo" class="w-full border rounded px-3 py-2">
-                                <option value="">Selecione</option>
-                                <option value="receita">Receita</option>
+                            <InputLabel for="tipo" value="Tipo" :required="true"/>
+                            <select 
+                                v-model="lancamento.tipo"
+                                id="tipo"
+                                class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                required>
+                                <option value="" disabled>Selecione...</option>
                                 <option value="despesa">Despesa</option>
+                                <option value="receita">Receita</option>
                             </select>
-                            <p v-if="form.errors[`lancamentos.${index}.tipo`]" class="text-sm text-red-600 mt-1">
-                                {{ form.errors[`lancamentos.${index}.tipo`] }}
-                            </p>
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.tipo`]" />
                         </div>
-
+                        <!-- Valor -->
                         <div>
-                            <label class="block text-sm font-medium mb-1">Valor</label>
-                            <input v-model="lancamento.valor" v-mask-decimal
-                            placeholder="0.00" type="number" step="0.01"
-                                class="w-full border rounded px-3 py-2" />
-                            <p v-if="form.errors[`lancamentos.${index}.valor`]" class="text-sm text-red-600 mt-1">
-                                {{ form.errors[`lancamentos.${index}.valor`] }}
-                            </p>
+                            <InputLabel for="valor" value="Valor" :required="true"/>
+                            <TextInput
+                                id="valor"
+                                v-mask-decimal
+                                placeholder="0.00"
+                                v-model="lancamento.valor"
+                                class="mt-1 block w-full"
+                                step="0.01"
+                                required
+                            />
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.valor`]" />
                         </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Descrição</label>
-                            <input v-model="lancamento.descricao" type="text" class="w-full border rounded px-3 py-2" />
-                            <p v-if="
-                                form.errors[
-                                `lancamentos.${index}.descricao`
-                                ]
-                            " class="text-sm text-red-600 mt-1">
-                                {{
-                                    form.errors[
-                                    `lancamentos.${index}.descricao`
-                                    ]
-                                }}
-                            </p>
+                        <!-- Descrição -->
+                        <div >
+                            <InputLabel for="descricao" value="Descrição" :required="true"/>
+                            <TextInput
+                                id="descricao"
+                                v-model="lancamento.descricao"
+                                type="text"
+                                class="mt-1 block w-full"
+                                required
+                            />
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.descricao`]" />                  
                         </div>
-
+                        <!-- Categoria -->
                         <div>
-                            <label class="block text-sm font-medium mb-1">Categoria</label>
-                            <select v-model="lancamento.categoria_id" class="w-full border rounded px-3 py-2">
+                            <InputLabel for="categoria" value="Categoria" :required="true"/>
+                            <select
+                                id="categoria" 
+                                v-model="lancamento.categoria_id"
+                                class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                required>
                                 <option value="">Selecione</option>
-                                <option v-for="cat in props.categorias" :key="cat.id" :value="cat.id">
-                                    {{ cat.nome }}
+                                <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">{{ categoria.nome }}
                                 </option>
                             </select>
-                            <p v-if="
-                                form.errors[
-                                `lancamentos.${index}.categoria_id`
-                                ]
-                            " class="text-sm text-red-600 mt-1">
-                                {{
-                                    form.errors[
-                                    `lancamentos.${index}.categoria_id`
-                                    ]
-                                }}
-                            </p>
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.categoria_id`]" />  
                         </div>
+                           
+                        
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                         <div>
-                            <label class="block text-sm font-medium mb-1">Data</label>
-                            <input v-model="lancamento.data" type="text" v-mask-date placeholder="dd/mm/aaaa"
-                                class="w-full border rounded px-3 py-2" />
-                            <p v-if="form.errors[`lancamentos.${index}.data`]" class="text-sm text-red-600 mt-1">
-                                {{ form.errors[`lancamentos.${index}.data`] }}
-                            </p>
+                            <InputLabel for="data" value="Data" :required="true"/>
+                            <TextInput
+                                id="data"
+                                v-model="lancamento.data"
+                                v-maska="'##/##/####'"
+                                class="mt-1 block w-full"
+                                placeholder="dia/mês/ano"
+                                required
+                            />
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.data`]" />
                         </div>
-
+                        <!-- Tipo de Recorrência -->
                         <div>
-                            <label class="block text-sm font-medium mb-1">Tipo de Recorrência</label>
-                            <select v-model="lancamento.tipo_recorrencia" class="w-full border rounded px-3 py-2">
-                                <option value="none">Nenhuma</option>
+                            <InputLabel for="tipo_recorrencia" value="Tipo da recorrência" :required="true"/>
+                            <select 
+                                v-model="lancamento.tipo_recorrencia"
+                                class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                required>
+                                <option value="none">Sem Recorrência</option>
                                 <option value="mensal">Mensal</option>
                                 <option value="anual">Anual</option>
-                                <option value="diferente">Diferente</option>
+                                <option value="diferente">Outro (Personalizado)</option>
                             </select>
-                            <p v-if="
-                                form.errors[
-                                `lancamentos.${index}.tipo_recorrencia`
-                                ]
-                            " class="text-sm text-red-600 mt-1">
-                                {{
-                                    form.errors[
-                                    `lancamentos.${index}.tipo_recorrencia`
-                                    ]
-                                }}
-                            </p>
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.esta_ativa`]" />
                         </div>
-
+                        <!-- Recorrência Diferente (meses) -->
                         <div v-if="lancamento.tipo_recorrencia === 'diferente'">
-                            <label class="block text-sm font-medium mb-1">Recorrência Diferente (meses)</label>
-                            <input v-model="lancamento.recorrencia_diferente_meses" type="number"
-                                class="w-full border rounded px-3 py-2" />
-                            <p v-if="
-                                form.errors[
-                                `lancamentos.${index}.recorrencia_diferente_meses`
-                                ]
-                            " class="text-sm text-red-600 mt-1">
-                                {{
-                                    form.errors[
-                                    `lancamentos.${index}.recorrencia_diferente_meses`
-                                    ]
-                                }}
-                            </p>
+                            <InputLabel for="recorrencia_diferente_meses" value="Recorrência (em meses)" />
+                            <TextInput
+                                id="recorrencia_diferente_meses"
+                                v-model="lancamento.recorrencia_diferente_meses"
+                                type="number"
+                                min="1"
+                                class="mt-1 block w-full"
+                            />
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.recorrencia_diferente_meses`]" />  
                         </div>
-
-                        <div v-if="
-                            lancamento.tipo_recorrencia &&
-                            lancamento.tipo_recorrencia !== ''
-                        ">
-                            <label class="block text-sm font-medium mb-1">Fim da Recorrência</label>
-                            <input v-model="lancamento.fim_da_recorrencia" type="date"
-                                class="w-full border rounded px-3 py-2" />
-                            <p v-if="
-                                form.errors[
-                                `lancamentos.${index}.fim_da_recorrencia`
-                                ]
-                            " class="text-sm text-red-600 mt-1">
-                                {{
-                                    form.errors[
-                                    `lancamentos.${index}.fim_da_recorrencia`
-                                    ]
-                                }}
-                            </p>
+                        <!-- Fim da Recorrência -->
+                        <div v-if="lancamento.tipo_recorrencia != 'none'">
+                            <InputLabel for="fim_da_recorrencia" value="Fim da recorrência" />
+                            <TextInput
+                                id="fim_da_recorrencia"
+                                v-model="lancamento.fim_da_recorrencia"
+                                v-maska="'##/##/####'"
+                                placeholder="dia/mês/ano"
+                                class="mt-1 block w-full"
+                            />
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.fim_da_recorrencia`]" />
                         </div>
-
-                        <div class="flex items-center gap-2 md:col-span-2 lg:col-span-1 mt-2">
-                            <input v-model="lancamento.esta_ativa" type="checkbox" :id="`ativa-${index}`"
-                                class="w-4 h-4 text-blue-600 border-gray-300 rounded" />
-                            <label :for="`ativa-${index}`" class="text-sm font-medium">Está ativa</label>
+                        <!-- Esta Ativa -->
+                        <div class="flex items-center mt-4">
+                            <input
+                                id="esta_ativa"
+                                v-model="lancamento.esta_ativa"
+                                type="checkbox" 
+                                class="lancamento-checkbox h-5 w-5  border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm m-1 block "
+                            />
+                            <InputLabel for="esta_ativa" value="Está ativa? " />
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.tipo_recorrencia`]" />
                         </div>
+                        
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">

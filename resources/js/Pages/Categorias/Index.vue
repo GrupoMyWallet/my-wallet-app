@@ -1,8 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import Welcome from '@/Components/Welcome.vue';
+import TextInput from '@/Components/TextInput.vue'
+import InputError from '@/Components/InputError.vue'
+import InputLabel from '@/Components/InputLabel.vue'
+import SelectInput from '@/Components/SelectInput.vue'
+import Messages from '@/Components/Messages.vue'
 import { useForm } from '@inertiajs/vue3'
 
 // Props vindas do backend (categorias: todas as categorias para listar)
@@ -74,19 +77,24 @@ function submit() {
                 <h3 class="font-bold mb-4 text-gray-700">Criar Nova Categoria</h3>
                 <form @submit.prevent="submit" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Nome</label>
-                        <input v-model="form.nome" type="text"
-                            class="w-full border-gray-300 rounded-lg focus:ring focus:ring-blue-200" required
-                            autocomplete="off" />
-                        <div v-if="form.errors.nome" class="text-sm text-red-600">{{ form.errors.nome }}</div>
-                    </div>
+                        <InputLabel for="nome" value="Nome" :required="true" />
+                        <TextInput  
+                            id="nome" 
+                            type="text" 
+                            v-model="form.nome" 
+                            class="mt-1 block w-full" 
+                            step="0.01"
+                            required />
+                        <InputError class="mt-2" :message="form.errors.nome" />
+                        </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Tipo</label>
-                        <select v-model="form.tipo" class="w-full border-gray-300 rounded-lg">
+
+                        <InputLabel for="tipo" value="Tipo" :required="true" />
+                        <SelectInput v-model="form.tipo">
                             <option value="despesa">Despesa</option>
                             <option value="receita">Receita</option>
-                        </select>
-                        <div v-if="form.errors.tipo" class="text-sm text-red-600">{{ form.errors.tipo }}</div>
+                        </SelectInput>
+                        <InputError class="mt-2" :message="form.errors.tipo" />
                     </div>
                     <button type="submit" :disabled="form.processing"
                         class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
