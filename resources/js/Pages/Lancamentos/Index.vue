@@ -110,7 +110,8 @@ const submit = () => {
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Valor <span
                                         class="text-red-500">*</span></label>
-                                <input v-model="form.item.valor" type="number" step="0.01"
+                                <input v-model="form.item.valor" type="number" v-mask-decimal
+                                placeholder="0.00" step="0.01"
                                     class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                     required>
                                 <span v-if="form.errors.valor" class="text-red-500 text-sm">{{ form.errors.valor
@@ -132,7 +133,7 @@ const submit = () => {
                                 <select v-model="form.item.categoria_id"
                                     class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                                     <option value="">Sem categoria</option>
-                                    <option v-for="cat in categorias" :key="cat.id" :value="cat.id">{{ cat.nome }}
+                                    <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">{{ categoria.nome }}
                                     </option>
                                 </select>
                                 <span v-if="form.errors.categoria_id" class="text-red-500 text-sm">{{
