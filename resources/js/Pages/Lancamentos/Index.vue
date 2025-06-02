@@ -10,9 +10,10 @@ import SelectInput from '@/Components/SelectInput.vue'
 import InputError from '@/Components/InputError.vue'
 import InputLabel from '@/Components/InputLabel.vue'
 import Messages from '@/Components/Messages.vue'
+import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps({
-    lancamentos: Array,
+    lancamentos: Object,
     categorias: Array,
 })
 
@@ -93,7 +94,9 @@ const deleteItem = () => {
                 + Novo Lançamento
                 </Link>
             </div>
-            <Tabela :data="lancamentos" :fields="fields" @delete="onDelete" @edit="onEdit" />
+            <Tabela :data="lancamentos.data" :fields="fields" @delete="onDelete" @edit="onEdit" />
+
+            <Pagination :pagination="lancamentos" />
         </div>
 
         <!-- MODAL DE EDIÇÃO -->
@@ -162,7 +165,7 @@ const deleteItem = () => {
                                 <SelectInput 
                                     v-model="form.item.tipo_recorrencia"
                                     required>
-                                    <option value="none">Sem Recorrência</option>
+                                    <option value="nenhuma">Sem Recorrência</option>
                                     <option value="mensal">Mensal</option>
                                     <option value="anual">Anual</option>
                                     <option value="diferente">Outro (Personalizado)</option>
@@ -178,7 +181,7 @@ const deleteItem = () => {
                                 <InputError class="mt-2" :message="form.errors.recorrencia_diferente_meses" />
                             </div>
                             <!-- Fim da Recorrência -->
-                            <div v-if="form.item.tipo_recorrencia !== 'none'">
+                            <div v-if="form.item.tipo_recorrencia !== 'nenhuma'">
                                 <InputLabel for="fim_da_recorrencia" value="Fim da Recorrência" />
                                 <TextInput id="fim_da_recorrencia" v-model="form.item.fim_da_recorrencia"
                                     v-maska="'##/##/####'" class="mt-1 block w-full" />

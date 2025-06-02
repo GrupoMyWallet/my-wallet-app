@@ -20,6 +20,9 @@ class Lancamento extends Model
 
     protected $casts = [
         'data' => 'date:d/m/Y',
+        'fim_da_recorrencia' => 'date:d/m/Y',
+        'valor' => 'decimal:2',
+        'esta_ativa' => 'boolean',
     ];
 
     public function isDespesa() { return $this->type === 'despesa'; }
@@ -45,7 +48,7 @@ class Lancamento extends Model
             'descricao' => 'required|string|max:255',
             'categoria_id' => 'nullable|exists:categorias,id',
             'data' => 'required|date_format:d/m/Y',
-            'tipo_recorrencia' => 'required|in:none,mensal,anual,diferente',
+            'tipo_recorrencia' => 'required|in:nenhuma,mensal,anual,diferente',
             'recorrencia_diferente_meses' => 'required_if:tipo_recorrencia,diferente|nullable|integer|min:1',
             'fim_da_recorrencia' => 'nullable|date|after_or_equal:date',
             'esta_ativa' => 'boolean',

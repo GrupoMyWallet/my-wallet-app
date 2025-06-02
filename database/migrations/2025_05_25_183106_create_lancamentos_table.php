@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('descricao');
             $table->unsignedBigInteger('categoria_id')->nullable();
             $table->date('data');
-            $table->enum('tipo_recorrencia', ['none', 'mensal', 'anual', 'diferente'])->default('none');
+            $table->enum('tipo_recorrencia', ['nenhuma', 'mensal', 'anual', 'diferente'])->default('nenhuma');
             $table->integer('recorrencia_diferente_meses')->nullable();
             $table->date('fim_da_recorrencia')->nullable();
             $table->boolean('esta_ativa')->default(true);

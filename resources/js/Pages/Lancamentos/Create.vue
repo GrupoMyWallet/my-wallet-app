@@ -21,7 +21,7 @@ const form = useForm({
             descricao: "",
             categoria_id: "",
             date: "",
-            tipo_recorrencia: "none",
+            tipo_recorrencia: "nenhuma",
             recorrencia_diferente_meses: null,
             fim_da_recorrencia: "",
             esta_ativa: true,
@@ -37,7 +37,7 @@ const addLancamento = () => {
         descricao: "",
         categoria_id: "",
         date: "",
-        tipo_recorrencia: "none",
+        tipo_recorrencia: "nenhuma",
         recorrencia_diferente_meses: null,
         fim_da_recorrencia: "",
         esta_ativa: true,
@@ -58,7 +58,7 @@ const submit = () => {
 
 watchEffect(() => {
   form.lancamentos.forEach((lancamento) => {
-    if (lancamento.tipo_recorrencia === 'none' && lancamento.fim_da_recorrencia) {
+    if (lancamento.tipo_recorrencia === 'nenhuma' && lancamento.fim_da_recorrencia) {
       lancamento.fim_da_recorrencia = ''
     }
     if (lancamento.tipo_recorrencia !== 'diferente' && lancamento.recorrencia_diferente_meses) {
@@ -169,7 +169,7 @@ watchEffect(() => {
                                 v-model="lancamento.tipo_recorrencia"
                                 class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
                                 required>
-                                <option value="none">Sem Recorrência</option>
+                                <option value="nenhuma">Sem Recorrência</option>
                                 <option value="mensal">Mensal</option>
                                 <option value="anual">Anual</option>
                                 <option value="diferente">Outro (Personalizado)</option>
@@ -189,7 +189,7 @@ watchEffect(() => {
                             <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.recorrencia_diferente_meses`]" />  
                         </div>
                         <!-- Fim da Recorrência -->
-                        <div v-if="lancamento.tipo_recorrencia != 'none'">
+                        <div v-if="lancamento.tipo_recorrencia != 'nenhuma'">
                             <InputLabel for="fim_da_recorrencia" value="Fim da recorrência" />
                             <TextInput
                                 id="fim_da_recorrencia"
