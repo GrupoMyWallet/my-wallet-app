@@ -1,11 +1,14 @@
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import get from "lodash/get";
 
 const props = defineProps({
     data: { type: Array, default: () => [] },
     fields: { type: Array, default: () => [] },
 });
+
+const sortField = ref('');
+const sortDirection = ref('asc');
 
 function formatValue(key, value) {
     if (value == null) return "-";
@@ -26,76 +29,130 @@ function formatValue(key, value) {
     return value;
 }
 
-const itens = computed(() => props.data);
+function sortBy(field) {
+    if (sortField.value === field.key) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field.key;
+        sortDirection.value = 'asc';
+    }
+}
+
+const sortedItems = computed(() => {
+    if (!sortField.value) return props.data;
+    
+    return [...props.data].sort((a, b) => {
+        const aValue = get(a, sortField.value);
+        const bValue = get(b, sortField.value);
+        
+        let comparison = 0;
+        
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+        
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+            comparison = aValue.localeCompare(bValue);
+        } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+            comparison = aValue - bValue;
+        } else {
+            comparison = String(aValue).localeCompare(String(bValue));
+        }
+        
+        return sortDirection.value === 'asc' ? comparison : -comparison;
+    });
+});
 </script>
 
 <template>
-    <div class="overflow-x-auto rounded-xl shadow-lg bg-gradient-to-b from-blue-50 to-white border border-blue-100">
-        <table class="min-w-full text-sm text-gray-800">
-            <thead>
-                <tr>
-                    <th
-                        v-for="field in fields"
-                        :key="field.key"
-                        class="px-6 py-3 bg-blue-600 text-white sticky top-0 z-10 text-left font-semibold tracking-wide first:rounded-tl-xl last:rounded-tr-xl shadow-sm"
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th
+                            v-for="field in fields"
+                            :key="field.key"
+                            class="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                            @click="sortBy(field)"
+                        >
+                            <div class="flex items-center gap-2">
+                                {{ field.label }}
+                                <div class="flex flex-col">
+                                    <svg 
+                                        class="w-3 h-3 text-gray-400"
+                                        :class="{ 'text-blue-600': sortField === field.key && sortDirection === 'asc' }"
+                                        fill="currentColor" 
+                                        viewBox="0 0 20 20"kj
+                                    >
+                                        <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                    <svg 
+                                        class="w-3 h-3 text-gray-400 -mt-1"
+                                        :class="{ 'text-blue-600': sortField === field.key && sortDirection === 'desc' }"
+                                        fill="currentColor" 
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 w-32">
+                            Ações
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <tr
+                        v-for="(item, index) in sortedItems"
+                        :key="index"
+                        class="hover:bg-gray-50 transition-colors"
                     >
-                        {{ field.label }}
-                    </th>
-                    <th class="px-6 py-3 bg-blue-600 text-white sticky top-0 z-10 text-left font-semibold tracking-wide last:rounded-tr-xl shadow-sm">
-                        Ações
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr
-                    v-for="(item, index) in itens"
-                    :key="index"
-                    class="border-b border-blue-100 even:bg-blue-50/40 hover:bg-blue-100/70 transition"
-                >
-                    <td
-                        v-for="field in fields"
-                        :key="field.key"
-                        class="px-6 py-3 whitespace-nowrap"
-                    >
-                        <slot
-                            :name="`cell:${field.key}`"
-                            :item="item"
-                            :value="formatValue(field.key, get(item, field.key))"
+                        <td
+                            v-for="field in fields"
+                            :key="field.key"
+                            class="px-4 py-3 text-sm text-gray-900"
                         >
-                            {{ formatValue(field.key, get(item, field.key)) }}
-                        </slot>
-                    </td>
-                    <td class="px-6 py-3 flex gap-2 items-center">
-                        <button
-                            @click="$emit('edit', item)"
-                            class="inline-flex items-center gap-1 px-3 py-1 bg-blue-500 text-white font-medium rounded-lg shadow hover:bg-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-200"
-                            title="Editar"
-                        >
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15.232 5.232l3.536 3.536M9 13.5V21h7.5l6.364-6.364a2.5 2.5 0 0 0 0-3.536l-7.5-7.5a2.5 2.5 0 0 0-3.536 0L2.5 9.5a2.5 2.5 0 0 0 0 3.536l6.364 6.364z"/>
-                            </svg>
-                            <span class="hidden md:inline">Editar</span>
-                        </button>
-                        <button
-                            @click="$emit('delete', item)"
-                            class="inline-flex items-center gap-1 px-3 py-1 bg-red-500 text-white font-medium rounded-lg shadow hover:bg-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-200"
-                            title="Excluir"
-                        >
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            <span class="hidden md:inline">Excluir</span>
-                        </button>
-                    </td>
-                </tr>
-                <tr v-if="!itens.length">
-                    <td :colspan="fields.length + 1" class="px-6 py-10 text-center text-blue-500 font-semibold bg-blue-50 rounded-b-xl">
-                        Nenhum registro encontrado.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                            <slot
+                                :name="`cell:${field.key}`"
+                                :item="item"
+                                :value="formatValue(field.key, get(item, field.key))"
+                            >
+                                {{ formatValue(field.key, get(item, field.key)) }}
+                            </slot>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex gap-2">
+                                <button
+                                    @click="$emit('edit', item)"
+                                    class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                    title="Editar"
+                                >
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button
+                                    @click="$emit('delete', item)"
+                                    class="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                    title="Excluir"
+                                >
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="!sortedItems.length">
+                        <td :colspan="fields.length + 1" class="px-4 py-8 text-center text-gray-500">
+                            Nenhum registro encontrado.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>
