@@ -17,15 +17,12 @@ return new class extends Migration
             $table->enum('tipo', ['despesa', 'receita']);
             $table->decimal('valor', 12, 2);
             $table->string('descricao');
-            $table->unsignedBigInteger('categoria_id')->nullable();
+            $table->foreignId('categoria_id')->nullable()->constrained()->nullOnDelete();
             $table->date('data');
-            $table->enum('tipo_recorrencia', ['nenhuma', 'mensal', 'anual', 'diferente'])->default('nenhuma');
-            $table->integer('recorrencia_diferente_meses')->nullable();
+            $table->integer('intervalo_meses')->default(0); // 0=único, 1=mensal, 12=anual, 3=trimestral
             $table->date('fim_da_recorrencia')->nullable();
             $table->boolean('esta_ativa')->default(true);
             $table->timestamps();
-
-            $table->foreign('categoria_id')->references('id')->on('categorias')->nullOnDelete();
         });
     }
 

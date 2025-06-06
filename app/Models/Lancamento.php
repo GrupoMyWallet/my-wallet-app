@@ -15,7 +15,7 @@ class Lancamento extends Model
 
     protected $fillable = [
         'user_id', 'tipo', 'valor', 'descricao', 'categoria_id', 'data',
-        'tipo_recorrencia', 'recorrencia_diferente_meses', 'fim_da_recorrencia', 'esta_ativa'
+        'intervalo_meses', 'fim_da_recorrencia', 'esta_ativa'
     ];
 
     protected $casts = [
@@ -41,51 +41,46 @@ class Lancamento extends Model
 
         
     public static function rules()
-    {
-        return [
-            'tipo'  => 'required|in:despesa,receita',
-            'valor' => 'required|numeric|min:0.01|max:999999999999.99',
-            'descricao' => 'required|string|max:255',
-            'categoria_id' => 'nullable|exists:categorias,id',
-            'data' => 'required|date_format:d/m/Y',
-            'tipo_recorrencia' => 'required|in:nenhuma,mensal,anual,diferente',
-            'recorrencia_diferente_meses' => 'required_if:tipo_recorrencia,diferente|nullable|integer|min:1',
-            'fim_da_recorrencia' => 'nullable|date|after_or_equal:date',
-            'esta_ativa' => 'boolean',
-        ];
-    }
+{
+    return [
+        'tipo' => 'required|in:despesa,receita',
+        'valor' => 'required|numeric|min:0.01|max:999999999999.99',
+        'descricao' => 'required|string|max:255',
+        'categoria_id' => 'nullable|exists:categorias,id',
+        'data' => 'required|date_format:d/m/Y',
+        'intervalo_meses' => 'required|integer|min:0',
+        'fim_da_recorrencia' => 'nullable|date_format:d/m/Y|after_or_equal:data',
+        'esta_ativa' => 'boolean',
+    ];
+}
 
-    public static function messages()
-    {
-        return [
-            'tipo.required' => 'O tipo é obrigatório.',
-            'tipo.in' => 'O tipo deve ser despesa ou receita.',
+public static function messages()
+{
+    return [
+        'tipo.required' => 'O tipo é obrigatório.',
+        'tipo.in' => 'O tipo deve ser despesa ou receita.',
 
-            'valor.required' => 'O valor é obrigatório.',
-            'valor.numeric' => 'O valor deve ser numérico.',
-            'valor.min' => 'O valor mínimo é 0,01.',
-            'valor.max' => 'O valor máximo é 999999999999,99.',
+        'valor.required' => 'O valor é obrigatório.',
+        'valor.numeric' => 'O valor deve ser numérico.',
+        'valor.min' => 'O valor mínimo é 0,01.',
+        'valor.max' => 'O valor máximo é 999999999999,99.',
 
-            'descricao.required' => 'A descrição é obrigatória.',
-            'descricao.max' => 'A descrição deve ter no máximo 255 caracteres.',
+        'descricao.required' => 'A descrição é obrigatória.',
+        'descricao.max' => 'A descrição deve ter no máximo 255 caracteres.',
 
-            'categoria_id.exists' => 'A categoria selecionada não existe.',
+        'categoria_id.exists' => 'A categoria selecionada não existe.',
 
-            'data.required' => 'A data é obrigatória.',
-            'data.date' => 'Informe uma data válida.',
-            'data.date.date_format' => 'A data deve estar no formato d/m/ano.',
+        'data.required' => 'A data é obrigatória.',
+        'data.date' => 'A data deve ser uma data válida.',
 
-            'tipo_recorrencia.required' => 'O tipo de recorrência é obrigatório.',
-            'tipo_recorrencia.in' => 'Tipo de recorrência inválido.',
+        'intervalo_meses.required' => 'O intervalo de meses é obrigatório.',
+        'intervalo_meses.integer' => 'O intervalo de meses deve ser um número inteiro.',
+        'intervalo_meses.min' => 'O intervalo de meses deve ser pelo menos 0.',
 
-            'recorrencia_diferente_meses.integer' => 'A recorrência diferente deve ser um número inteiro.',
-            'recorrencia_diferente_meses.min' => 'A recorrência diferente deve ser pelo menos 1 mês.',
-            
+        'fim_da_recorrencia.date' => 'A data final da recorrência deve ser uma data válida.',
+        'fim_da_recorrencia.after_or_equal' => 'A data final da recorrência deve ser igual ou posterior à data inicial.',
 
-            'fim_da_recorrencia.date' => 'Informe uma data final de recorrência válida.',
-            'fim_da_recorrencia.after_or_equal' => 'A data final da recorrência deve ser igual ou posterior à data inicial.',
-
-            'esta_ativa.boolean' => 'O campo "ativa" deve ser verdadeiro ou falso.',
-        ];
-    }
+        'esta_ativa.boolean' => 'O campo "ativa" deve ser verdadeiro ou falso.',
+    ];
+}
 }

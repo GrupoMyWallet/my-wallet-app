@@ -27,7 +27,8 @@ class LancamentoController extends Controller
     public function index(Request $request)
     {   
         $userId = $request->user()->id;
-        $lancamentos = $this->lancamentoRepository->getLancamentosDoUsuarioWithCategoria($userId);
+        $lancamentos = $this->lancamentoRepository->paginateLancamentosDoUsuarioComCategoria($userId, 10);
+        
         $categorias = $this->categoriaRepository->getCategoriasDoUsuario($userId);
 
         return Inertia::render('Lancamentos/Index', [
@@ -75,7 +76,7 @@ class LancamentoController extends Controller
             return $lancamento;
         }, $lancamentos_validados['lancamentos']);
         
-        Lancamento::insert($lancamentos);
+        $this->lancamentoRepository->insert($lancamentos);
 
         return redirect()->route('lancamentos.index')->with('success', 'Lançamentos registrados com sucesso!');
     }
@@ -86,8 +87,7 @@ class LancamentoController extends Controller
             $lancamento_validado = $request->validated();
             $lancamento_validado['data'] = Carbon::createFromFormat('d/m/Y', $lancamento_validado['data'])->format('Y-m-d');
 
-            $lancamento = Lancamento::findOrFail($id);
-            $lancamento->update($lancamento_validado);
+            $this->lancamentoRepository->update($id, $lancamento_validado);
 
             return redirect()->route('lancamentos.index')->with('success', 'Lançamento atualizado com sucesso!');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -105,8 +105,8 @@ class LancamentoController extends Controller
     public function destroy($id)
     {
         try {
-            $lancamento = Lancamento::findOrFail($id);
-            $lancamento->delete();
+        
+            $this->lancamentoRepository->delete($id);
     
             return redirect()->route('lancamentos.index')->with('success', 'Lançamento excluído com sucesso!');
         } catch (\Exception $e) {
