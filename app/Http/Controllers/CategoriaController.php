@@ -55,6 +55,6 @@ class CategoriaController extends Controller
         ]);
 
 
-        return redirect()->route('categorias.index');
+        return redirect()->route('categorias.index')->with('success', 'Categoria cadastrada com sucesso!');
     }
 }
