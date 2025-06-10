@@ -33,7 +33,7 @@ function cadastrarOrcamento(categoriaId) {
 </script>
 
 <template>
-    <AppLayout title="Lançamentos">
+    <AppLayout title="Categorias">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Categorias

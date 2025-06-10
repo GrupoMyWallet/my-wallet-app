@@ -1,6 +1,5 @@
 <script setup>
 import AppLayout from "@/Layouts/AppLayout.vue";
-
 import { watchEffect } from 'vue'
 import { useForm } from "@inertiajs/vue3";
 import TextInput from '@/Components/TextInput.vue'
@@ -13,59 +12,76 @@ const props = defineProps({
 });
 
 const form = useForm({
-    lancamentos: [
-        {
-            user_id: props.user.id,
-            tipo: "despesa",
-            valor: null,
-            descricao: "",
-            categoria_id: "",
-            date: "",
-            tipo_recorrencia: "nenhuma",
-            recorrencia_diferente_meses: null,
-            fim_da_recorrencia: "",
-            esta_ativa: true,
-        },
-    ],
+    lancamentos: [],
 });
 
-const addLancamento = () => {
-    form.lancamentos.push({
-        user_id: props.user.id,
-        tipo: "",
-        valor: null,
-        descricao: "",
-        categoria_id: "",
-        date: "",
-        tipo_recorrencia: "nenhuma",
-        recorrencia_diferente_meses: null,
-        fim_da_recorrencia: "",
+function createNewLancamento() {
+    return {
+        tipo: 'despesa',
+        valor: '',
+        descricao: '',
+        categoria_id: '',
+        data: new Date().toLocaleDateString('pt-BR'),
+        intervalo_meses: 0,             
+        intervalo_selecionado: '0',
+        valor_intervalo_custom: 1,
+        fim_da_recorrencia: '',
         esta_ativa: true,
-    });
+    };
+}
+
+const addLancamento = () => {
+    form.lancamentos.push(createNewLancamento());
 };
 
 const removeLancamento = (index) => {
     form.lancamentos.splice(index, 1);
 };
 
+if (form.lancamentos.length === 0) {
+    addLancamento();
+}
+
 const submit = () => {
-    form.post("/lancamentos", {
-        onError: (errors) => {
-            console.error("Erros do backend:", errors);
-        },
-    });
+    const dataToSubmit = {
+        ...form.data(),
+        lancamentos: form.lancamentos.map(lancamento => {
+            
+            const { intervalo_selecionado, valor_intervalo_custom, ...lancamentoParaEnviar } = lancamento;
+            return lancamentoParaEnviar; 
+        })
+    };
+
+    
+    form.transform(() => dataToSubmit) 
+        .post(route('lancamentos.store'), {
+            onSuccess: () => {
+                console.log('Formulário enviado com sucesso!');
+                
+            },
+            onError: (errors) => {
+                console.error('Erros no formulário:', errors);
+                
+            },
+            onFinish: () => {
+                form.processing = false;
+            }
+        });
 };
 
-watchEffect(() => {
-  form.lancamentos.forEach((lancamento) => {
-    if (lancamento.tipo_recorrencia === 'nenhuma' && lancamento.fim_da_recorrencia) {
-      lancamento.fim_da_recorrencia = ''
+function updateIntervaloMeses(lancamento) {
+    if (lancamento.intervalo_selecionado === 'custom') {
+        
+        if (!lancamento.valor_intervalo_custom || lancamento.valor_intervalo_custom < 1) {
+            lancamento.valor_intervalo_custom = 1;
+        }
+        
+        lancamento.intervalo_meses = parseInt(lancamento.valor_intervalo_custom) || 1;
+    } else {
+        
+        lancamento.intervalo_meses = parseInt(lancamento.intervalo_selecionado);
     }
-    if (lancamento.tipo_recorrencia !== 'diferente' && lancamento.recorrencia_diferente_meses) {
-      lancamento.recorrencia_diferente_meses = null
-    }
-  })
-})
+}
 
 </script>
 
@@ -91,12 +107,13 @@ watchEffect(() => {
                         </button>
                     </div>
 
+                    <!-- IDs dinâmicos para acessibilidade e funcionalidade correta com múltiplos itens -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                            <InputLabel for="tipo" value="Tipo" :required="true"/>
-                            <select 
+                            <InputLabel :for="'tipo_' + index" value="Tipo" :required="true"/>
+                            <select
                                 v-model="lancamento.tipo"
-                                id="tipo"
+                                :id="'tipo_' + index"
                                 class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
                                 required>
                                 <option value="" disabled>Selecione...</option>
@@ -105,11 +122,10 @@ watchEffect(() => {
                             </select>
                             <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.tipo`]" />
                         </div>
-                        <!-- Valor -->
                         <div>
-                            <InputLabel for="valor" value="Valor" :required="true"/>
+                            <InputLabel :for="'valor_' + index" value="Valor" :required="true"/>
                             <TextInput
-                                id="valor"
+                                :id="'valor_' + index"
                                 v-mask-decimal
                                 placeholder="0.00"
                                 v-model="lancamento.valor"
@@ -119,23 +135,21 @@ watchEffect(() => {
                             />
                             <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.valor`]" />
                         </div>
-                        <!-- Descrição -->
-                        <div >
-                            <InputLabel for="descricao" value="Descrição" :required="true"/>
+                        <div>
+                            <InputLabel :for="'descricao_' + index" value="Descrição" :required="true"/>
                             <TextInput
-                                id="descricao"
+                                :id="'descricao_' + index"
                                 v-model="lancamento.descricao"
                                 type="text"
                                 class="mt-1 block w-full"
                                 required
                             />
-                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.descricao`]" />                  
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.descricao`]" />
                         </div>
-                        <!-- Categoria -->
                         <div>
-                            <InputLabel for="categoria" value="Categoria" :required="true"/>
+                            <InputLabel :for="'categoria_' + index" value="Categoria" :required="true"/>
                             <select
-                                id="categoria" 
+                                :id="'categoria_' + index"
                                 v-model="lancamento.categoria_id"
                                 class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
                                 required>
@@ -143,17 +157,15 @@ watchEffect(() => {
                                 <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">{{ categoria.nome }}
                                 </option>
                             </select>
-                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.categoria_id`]" />  
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.categoria_id`]" />
                         </div>
-                           
-                        
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                         <div>
-                            <InputLabel for="data" value="Data" :required="true"/>
+                            <InputLabel :for="'data_' + index" value="Data" :required="true"/>
                             <TextInput
-                                id="data"
+                                :id="'data_' + index"
                                 v-model="lancamento.data"
                                 v-maska="'##/##/####'"
                                 class="mt-1 block w-full"
@@ -162,37 +174,45 @@ watchEffect(() => {
                             />
                             <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.data`]" />
                         </div>
-                        <!-- Tipo de Recorrência -->
+
+                        <!-- Intervalo em Meses (Select) -->
                         <div>
-                            <InputLabel for="tipo_recorrencia" value="Tipo da recorrência" :required="true"/>
-                            <select 
-                                v-model="lancamento.tipo_recorrencia"
+                            <InputLabel :for="'intervalo_meses_select_' + index" value="Recorrência (meses)" :required="true"/>
+                            <select
+                                v-model="lancamento.intervalo_selecionado"
+                                :id="'intervalo_meses_select_' + index"
+                                @change="updateIntervaloMeses(lancamento)"
                                 class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
                                 required>
-                                <option value="nenhuma">Sem Recorrência</option>
-                                <option value="mensal">Mensal</option>
-                                <option value="anual">Anual</option>
-                                <option value="diferente">Outro (Personalizado)</option>
+                                <option value="0">Sem Recorrência</option>
+                                <option value="1">Mensal (1 mês)</option>
+                                <option value="12">Anual (12 meses)</option>
+                                <option value="custom">Personalizado</option>
                             </select>
-                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.esta_ativa`]" />
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.intervalo_meses`]" />
                         </div>
-                        <!-- Recorrência Diferente (meses) -->
-                        <div v-if="lancamento.tipo_recorrencia === 'diferente'">
-                            <InputLabel for="recorrencia_diferente_meses" value="Recorrência (em meses)" />
+
+                        <!-- Campo personalizado para intervalo -->
+                        <div v-if="lancamento.intervalo_selecionado === 'custom'">
+                            <InputLabel :for="'valor_intervalo_custom_' + index" value="Intervalo (meses)" :required="lancamento.intervalo_selecionado === 'custom'"/>
                             <TextInput
-                                id="recorrencia_diferente_meses"
-                                v-model="lancamento.recorrencia_diferente_meses"
+                                :id="'valor_intervalo_custom_' + index"
+                                v-model.number="lancamento.valor_intervalo_custom"
                                 type="number"
                                 min="1"
                                 class="mt-1 block w-full"
+                                placeholder="Ex: 3"
+                                :required="lancamento.intervalo_selecionado === 'custom'"
+                                @input="lancamento.intervalo_meses = parseInt(lancamento.valor_intervalo_custom) || 1"
                             />
-                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.recorrencia_diferente_meses`]" />  
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.intervalo_meses`]" />
                         </div>
+
                         <!-- Fim da Recorrência -->
-                        <div v-if="lancamento.tipo_recorrencia != 'nenhuma'">
-                            <InputLabel for="fim_da_recorrencia" value="Fim da recorrência" />
+                        <div v-if="lancamento.intervalo_meses !== 0"> 
+                            <InputLabel :for="'fim_da_recorrencia_' + index" value="Fim da recorrência" />
                             <TextInput
-                                id="fim_da_recorrencia"
+                                :id="'fim_da_recorrencia_' + index"
                                 v-model="lancamento.fim_da_recorrencia"
                                 v-maska="'##/##/####'"
                                 placeholder="dia/mês/ano"
@@ -200,18 +220,18 @@ watchEffect(() => {
                             />
                             <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.fim_da_recorrencia`]" />
                         </div>
+
                         <!-- Esta Ativa -->
                         <div class="flex items-center mt-4">
                             <input
-                                id="esta_ativa"
+                                :id="'esta_ativa_' + index"
                                 v-model="lancamento.esta_ativa"
-                                type="checkbox" 
-                                class="lancamento-checkbox h-5 w-5  border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm m-1 block "
+                                type="checkbox"
+                                class="lancamento-checkbox h-5 w-5 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm m-1 block"
                             />
-                            <InputLabel for="esta_ativa" value="Está ativa? " />
-                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.tipo_recorrencia`]" />
+                            <InputLabel :for="'esta_ativa_' + index" value="Está ativa?" class="ml-2 mb-0" /> 
+                            <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.esta_ativa`]" />
                         </div>
-                        
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">

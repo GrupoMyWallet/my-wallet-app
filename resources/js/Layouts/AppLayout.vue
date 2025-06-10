@@ -194,11 +194,14 @@ const logout = () => {
                     <span class="ml-4 font-semibold text-lg text-gray-700">{{ title }}</span>
                 </header>
                 <!-- Desktop Page Heading -->
-                <header v-if="$slots.header" class="hidden md:block bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4">
-                        <slot name="header" />
-                    </div>
-                </header>
+                <header v-if="$slots.header" class="hidden md:block">
+  <div class="max-w-7xl mx-auto py-5 px-6">
+    <div class="flex items-center justify-between">
+      <slot name="header" />
+      <slot name="header-actions" />
+    </div>
+  </div>
+</header>
                 <main class="flex-1 p-4 md:p-8 overflow-auto">
                     <slot />
                 </main>

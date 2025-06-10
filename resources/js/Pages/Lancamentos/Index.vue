@@ -17,8 +17,22 @@ const props = defineProps({
     categorias: Array,
 })
 
+const estruturaInicialDoForm = {
+  id: null,
+  tipo: '',
+  valor: 0,
+  descricao: '',
+  categoria_id: '',
+  data: '',
+  intervalo_meses: 0,
+  selected_interval_option: '0',  
+  custom_interval_value: 1,
+  fim_da_recorrencia: '',
+  esta_ativa: true,
+};
+
 const form = useForm({
-    item: {},
+    item: { ...estruturaInicialDoForm },
 });
 
 const showModalDelete = ref(false)
@@ -33,14 +47,62 @@ function closeModal(modal) {
         showModalDelete.value = false
     }
 
-    nextTick(() => {
-        form.item = {};
-    });
+    form.reset();
+    form.clearErrors();
 }
 
 function openModal(modalRef, lancamento) {
-    form.item = { ...lancamento }
-    modalRef.value = true
+    if (!lancamento || !lancamento.id) {
+        console.error("Tentativa de abrir modal com lançamento inválido:", lancamento);
+        return;
+    }
+
+    form.reset(); 
+
+    form.item = {
+        ...estruturaInicialDoForm, 
+        ...lancamento,
+        intervalo_meses: parseInt(lancamento.intervalo_meses) || 0,   
+    };
+
+    const currentInterval = form.item.intervalo_meses;
+
+    if (currentInterval === 0) {
+        form.item.selected_interval_option = '0';
+        form.item.custom_interval_value = 1; // Reset para default
+    } else if (currentInterval === 1) {
+        form.item.selected_interval_option = '1';
+        form.item.custom_interval_value = 1; // Reset para default
+    } else if (currentInterval === 12) {
+        form.item.selected_interval_option = '12';
+        form.item.custom_interval_value = 1; // Reset para default
+    } else if (currentInterval > 0) { // Qualquer outro valor numérico positivo
+        form.item.selected_interval_option = 'custom';
+        form.item.custom_interval_value = currentInterval;
+    } else { // Fallback, embora já convertido para 0 acima
+        form.item.selected_interval_option = '0';
+        form.item.custom_interval_value = 1;
+    }
+    modalRef.value = true;
+}
+
+
+function handleIntervalOptionChange() {
+    const option = form.item.selected_interval_option;
+    if (option === 'custom') {
+        if (!form.item.custom_interval_value || form.item.custom_interval_value < 1) {
+            form.item.custom_interval_value = 1;
+        }
+        form.item.intervalo_meses = parseInt(form.item.custom_interval_value) || 1;
+    } else {
+        form.item.intervalo_meses = parseInt(option);
+    }
+}
+
+function updateIntervaloMesesFromCustom() {
+    if (form.item.selected_interval_option === 'custom') {
+        form.item.intervalo_meses = parseInt(form.item.custom_interval_value) || 1;
+    }
 }
 
 function onEdit(lancamento) {
@@ -57,14 +119,17 @@ const fields = [
     { key: 'categoria.nome', label: 'Categoria' },
     { key: 'valor', label: 'Valor (R$)' },
     { key: 'data', label: 'Data Cadastro' },
-    { key: 'tipo_recorrencia', label: 'Recorrência' },
+    { key: 'intervalo_meses', label: 'Recorrência (meses)' },
 ];
 
 const submit = () => {
-    form.put(route('lancamentos.update', form.item, form.item.id), {
-        preserveScroll: true,
-        onSuccess: () => closeModal('edit'),
-    });
+   
+    const { selected_interval_option, custom_interval_value, ...itemParaEnviar } = form.item;
+
+    form.transform(() => itemParaEnviar).put(route('lancamentos.update', itemParaEnviar.id), {
+            preserveScroll: true,
+            onSuccess: () => closeModal('edit'),
+        });
 };
 
 const deleteItem = () => {
@@ -73,7 +138,6 @@ const deleteItem = () => {
         onSuccess: () => closeModal('delete'),
     });
 };
-
 
 </script>
 
@@ -88,12 +152,22 @@ const deleteItem = () => {
         <Messages/>
 
         <div class="p-6">
-            <div class="flex justify-end mb-4">
-                <Link :href="route('lancamentos.create')"
-                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                + Novo Lançamento
+            <div class="flex justify-end gap-4 mb-6">
+                <Link :href="route('lancamentos.create')" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Novo Lançamento
+                </Link>
+
+                <Link :href="route('lancamentos.create')" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-green-600 text-white font-semibold shadow-md hover:bg-green-700 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16h16M4 4l16 16" />
+                    </svg>
+                    Importar Lançamentos
                 </Link>
             </div>
+            
             <Tabela :data="lancamentos.data" :fields="fields" @delete="onDelete" @edit="onEdit" />
 
             <Pagination :pagination="lancamentos" />
@@ -115,8 +189,8 @@ const deleteItem = () => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <!-- Tipo -->
                             <div>
-                                <InputLabel for="tipo" value="Tipo" :required="true" />
-                                <select v-model="form.item.tipo" id="tipo"
+                                <InputLabel for="edit-tipo" value="Tipo" :required="true" />
+                                <select v-model="form.item.tipo" id="edit-tipo"
                                     class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
                                     required>
                                     <option value="" disabled>Selecione...</option>
@@ -127,24 +201,24 @@ const deleteItem = () => {
                             </div>
                             <!-- Valor -->
                             <div>
-                                <InputLabel for="valor" value="Valor" :required="true" />
-                                <TextInput id="valor" v-mask-decimal type="number" inputmode="numeric"
-                                    placeholder="0.00" v-model="form.item.valor" class="mt-1 block w-full" step="0.01"
+                                <InputLabel for="edit-valor" value="Valor" :required="true" />
+                                <TextInput id="edit-valor" v-mask-decimal placeholder="0.00"
+                                    v-model="form.item.valor" class="mt-1 block w-full" step="0.01"
                                     required />
                                 <InputError class="mt-2" :message="form.errors.valor" />
                             </div>
                             <!-- Descrição -->
                             <div class="md:col-span-2">
-                                <InputLabel for="descricao" value="Descrição" :required="true" />
-                                <TextInput id="descricao" v-model="form.item.descricao" type="text"
+                                <InputLabel for="edit-descricao" value="Descrição" :required="true" />
+                                <TextInput id="edit-descricao" v-model="form.item.descricao" type="text"
                                     class="mt-1 block w-full" required />
                                 <InputError class="mt-2" :message="form.errors.descricao" />
                             </div>
                             <!-- Categoria -->
                             <div>
-                                <InputLabel for="categoria" value="Categoria" :required="true" />
-                                <SelectInput id="categoria" v-model="form.item.categoria_id"
-                                    required>
+                                <InputLabel for="edit-categoria" value="Categoria" :required="true" />
+                                <SelectInput id="edit-categoria" v-model="form.item.categoria_id"
+                                    required> <!-- Seu componente SelectInput -->
                                     <option value="">Sem categoria</option>
                                     <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">{{
                                         categoria.nome }}
@@ -154,51 +228,65 @@ const deleteItem = () => {
                             </div>
                             <!-- Data -->
                             <div>
-                                <InputLabel for="data" value="Data" :required="true" />
-                                <TextInput id="data" v-model="form.item.data" v-maska="'##/##/####'"
-                                    class="mt-1 block w-full" required />
+                                <InputLabel for="edit-data" value="Data" :required="true" />
+                                <TextInput id="edit-data" v-model="form.item.data" v-maska="'##/##/####'"
+                                    placeholder="dd/mm/aaaa" class="mt-1 block w-full" required />
                                 <InputError class="mt-2" :message="form.errors.data" />
                             </div>
-                            <!-- Tipo de Recorrência -->
+                            
+                            <!-- Recorrência (Select) -->
                             <div>
-                                <InputLabel for="tipo_recorrencia" value="Tipo da recorrência" :required="true" />
-                                <SelectInput 
-                                    v-model="form.item.tipo_recorrencia"
+                                <InputLabel for="edit-selected_interval_option" value="Recorrência" :required="true" />
+                                <select 
+                                    v-model="form.item.selected_interval_option"
+                                    id="edit-selected_interval_option"
+                                    @change="handleIntervalOptionChange"
+                                    class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
                                     required>
-                                    <option value="nenhuma">Sem Recorrência</option>
-                                    <option value="mensal">Mensal</option>
-                                    <option value="anual">Anual</option>
-                                    <option value="diferente">Outro (Personalizado)</option>
-                                </SelectInput>
-                                <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.tipo_recorrencia`]" />
+                                    <option value="0">Sem Recorrência</option>
+                                    <option value="1">Mensal (1 mês)</option>
+                                    <option value="12">Anual (12 meses)</option>
+                                    <option value="custom">Personalizado</option>
+                                </select>
+                                <InputError class="mt-2" :message="form.errors.intervalo_meses" />
                             </div>
-                            <!-- Recorrência Diferente (meses) -->
-                            <div v-if="form.item.tipo_recorrencia === 'diferente'">
-                                <InputLabel for="recorrencia_diferente_meses" value="Recorrência (em meses)" />
-                                <TextInput id="recorrencia_diferente_meses"
-                                    v-model="form.item.recorrencia_diferente_meses" type="number" min="1"
-                                    class="mt-1 block w-full" />
-                                <InputError class="mt-2" :message="form.errors.recorrencia_diferente_meses" />
+
+                            <!-- Intervalo Personalizado (meses) -->
+                            <div v-if="form.item.selected_interval_option === 'custom'">
+                                <InputLabel for="edit-custom_interval_value" value="Intervalo personalizado (meses)" :required="form.item.selected_interval_option === 'custom'" />
+                                <TextInput 
+                                    id="edit-custom_interval_value"
+                                    v-model.number="form.item.custom_interval_value"
+                                    type="number"
+                                    min="1"
+                                    class="mt-1 block w-full"
+                                    placeholder="Ex: 3"
+                                    :required="form.item.selected_interval_option === 'custom'"
+                                    @input="updateIntervaloMesesFromCustom"
+                                />
+                                <!-- O erro ainda será em 'intervalo_meses' se a validação do backend falhar para o valor numérico -->
+                                <InputError class="mt-2" :message="form.errors.intervalo_meses" />
                             </div>
+                            
                             <!-- Fim da Recorrência -->
-                            <div v-if="form.item.tipo_recorrencia !== 'nenhuma'">
-                                <InputLabel for="fim_da_recorrencia" value="Fim da Recorrência" />
-                                <TextInput id="fim_da_recorrencia" v-model="form.item.fim_da_recorrencia"
-                                    v-maska="'##/##/####'" class="mt-1 block w-full" />
+                            <div v-if="form.item.intervalo_meses && form.item.intervalo_meses > 0">
+                                <InputLabel for="edit-fim_da_recorrencia" value="Fim da Recorrência" />
+                                <TextInput id="edit-fim_da_recorrencia" v-model="form.item.fim_da_recorrencia"
+                                    v-maska="'##/##/####'" placeholder="dd/mm/aaaa" class="mt-1 block w-full" />
                                 <InputError class="mt-2" :message="form.errors.fim_da_recorrencia" />
                             </div>
-                            <!-- Esta Ativa -->
-                            <div class="flex items-center mt-4">
-                                <input id="esta_ativa" v-model="form.item.esta_ativa" type="checkbox"
-                                    class="form.item-checkbox h-5 w-5  border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm m-1 block " />
-                                <InputLabel for="esta_ativa" value="Está ativa? " />
-                                <InputError class="mt-2" :message="form.errors.esta_ativa" />
 
+                            <!-- Esta Ativa -->
+                            <div class="flex items-center mt-4 md:col-span-2">
+                                <input id="edit-esta_ativa" v-model="form.item.esta_ativa" type="checkbox"
+                                    class="h-5 w-5 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm m-1 block" />
+                                <InputLabel for="edit-esta_ativa" value="Está ativa?" class="ml-2 mb-0" />
+                                <InputError class="mt-2" :message="form.errors.esta_ativa" />
                             </div>
                         </div>
                         <!-- Botões -->
                         <div class="mt-8 flex justify-end gap-3">
-                            <button type="button" @click="closeModal"
+                            <button type="button" @click="() => closeModal('edit')"
                                 class="px-5 py-2 rounded-xl bg-gray-200 text-gray-800 hover:bg-gray-300 font-semibold transition">
                                 Cancelar
                             </button>
@@ -212,28 +300,24 @@ const deleteItem = () => {
             </template>
         </Modal>
 
-        <Modal :show="showModalDelete" @close="closeModal('delete')">
+        <Modal :show="showModalDelete" @close="() => closeModal('delete')">
             <template #default>
                 <div class="flex flex-col items-center px-4 py-6">
-                    <!-- Ícone de alerta -->
                     <div class="bg-red-100 rounded-full p-3 mb-4">
                         <svg class="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </div>
-                    <!-- Título -->
-                    <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">
                         Confirmar exclusão
                     </h3>
-                    <!-- Mensagem -->
-                    <p class="text-gray-600 dark:text-gray-300 text-center mb-6">
+                    <p class="text-gray-600 text-center mb-6">
                         Tem certeza que deseja excluir
-                        <span class="font-semibold text-red-700">{{ itemToDelete?.nome || 'este item' }}</span>?
+                        <span class="font-semibold text-red-700">{{ form.item?.descricao || 'este item' }}</span>?
                         <br>
                         Essa ação não poderá ser desfeita.
                     </p>
-                    <!-- Botões -->
                     <div class="flex gap-4 mt-2">
                         <button
                             class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition"
@@ -241,15 +325,13 @@ const deleteItem = () => {
                             Excluir
                         </button>
                         <button
-                            class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-lg font-semibold shadow transition"
-                            @click="closeModal('delete')">
+                            class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg font-semibold shadow transition"
+                            @click="() => closeModal('delete')">
                             Cancelar
                         </button>
                     </div>
                 </div>
             </template>
         </Modal>
-
-
     </AppLayout>
 </template>
