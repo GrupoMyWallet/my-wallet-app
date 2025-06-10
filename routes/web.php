@@ -7,6 +7,7 @@ use App\Http\Controllers\LancamentoController;
 use App\Http\Controllers\OrcamentoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MetaController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -22,9 +23,9 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/data', [DashboardController::class, 'getData'])->name('dashboard.data');
 
     Route::controller(LancamentoController::class)->group(function () {
         Route::get('/lancamentos', 'index')->name('lancamentos.index');
@@ -57,5 +58,7 @@ Route::middleware([
         Route::put('/orcamentos/{id}', 'update')->name('orcamentos.update');
         Route::delete('/orcamentos/{id}', 'destroy')->name('orcamentos.destroy'); 
     });
+
+    
 
 });
