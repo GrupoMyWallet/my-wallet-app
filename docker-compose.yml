@@ -32,7 +32,7 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
       - ./nginx/html:/var/www/html
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      
     depends_on:
       - app
     networks:
