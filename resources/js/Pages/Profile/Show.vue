@@ -14,10 +14,10 @@ defineProps({
 </script>
 
 <template>
-    <AppLayout title="Profile">
+    <AppLayout title="Perfil">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Profile
+                Perfil do Usuário
             </h2>
         </template>
 
@@ -34,17 +34,6 @@ defineProps({
 
                     <SectionBorder />
                 </div>
-
-                <div v-if="$page.props.jetstream.canManageTwoFactorAuthentication">
-                    <TwoFactorAuthenticationForm
-                        :requires-confirmation="confirmsTwoFactorAuthentication"
-                        class="mt-10 sm:mt-0"
-                    />
-
-                    <SectionBorder />
-                </div>
-
-                <LogoutOtherBrowserSessionsForm :sessions="sessions" class="mt-10 sm:mt-0" />
 
                 <template v-if="$page.props.jetstream.hasAccountDeletionFeatures">
                     <SectionBorder />

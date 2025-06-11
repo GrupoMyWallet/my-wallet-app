@@ -78,11 +78,11 @@ const clearPhotoFileInput = () => {
 <template>
     <FormSection @submitted="updateProfileInformation">
         <template #title>
-            Profile Information
+            Informações da conta
         </template>
 
         <template #description>
-            Update your account's profile information and email address.
+            Atualizas as informações da sua conta e o seu email.
         </template>
 
         <template #form>
@@ -130,7 +130,7 @@ const clearPhotoFileInput = () => {
 
             <!-- Name -->
             <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="name" value="Nome" />
                 <TextInput
                     id="name"
                     v-model="form.name"
@@ -179,11 +179,11 @@ const clearPhotoFileInput = () => {
 
         <template #actions>
             <ActionMessage :on="form.recentlySuccessful" class="me-3">
-                Saved.
+                Salvo.
             </ActionMessage>
 
             <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                Save
+                Salvar
             </PrimaryButton>
         </template>
     </FormSection>
