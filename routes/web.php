@@ -54,7 +54,6 @@ Route::middleware([
     Route::controller(OrcamentoController::class)->group(function () {
         Route::get('/orcamentos', 'index')->name('orcamentos.index');
         Route::post('/orcamentos', 'store')->name('orcamentos.store');
-        Route::get('/orcamentos/create/{id?}', 'create')->name('orcamentos.create');
         Route::put('/orcamentos/{id}', 'update')->name('orcamentos.update');
         Route::delete('/orcamentos/{id}', 'destroy')->name('orcamentos.destroy'); 
     });
