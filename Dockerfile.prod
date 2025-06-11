@@ -1,79 +1,79 @@
 # --- Estágio 1: Dependências do PHP com Composer ---
-      FROM composer:2 as vendor
+FROM composer:2 as vendor
 
-      WORKDIR /app
-      COPY database/ database/
-      COPY composer.json composer.json
-      COPY composer.lock composer.lock
-      RUN composer install --no-interaction --no-plugins --no-scripts --no-dev --prefer-dist --optimize-autoloader
-      
-      
-      # --- Estágio 2: Compilação dos Assets com Node.js ---
-      FROM node:20-alpine as node_assets
-      
-      WORKDIR /app
-      COPY package.json package.json
-      COPY package-lock.json package-lock.json
-      COPY vite.config.js vite.config.js
-      COPY tailwind.config.js tailwind.config.js
-      COPY postcss.config.js postcss.config.js
-      COPY resources/ resources/
-      
-      # <-- A LINHA MÁGICA VAI AQUI
-      # Copia a pasta vendor do estágio anterior para que o Ziggy seja encontrado
-      COPY --from=vendor /app/vendor/ /app/vendor/
-      
-      RUN npm install
-      RUN npm run build
-      
-      
-      # --- Estágio 3: Imagem Final de Produção ---
-      # (Nenhuma mudança necessária aqui)
-      FROM php:8.2-fpm-alpine
+WORKDIR /app
+COPY database/ database/
+COPY composer.json composer.json
+COPY composer.lock composer.lock
+RUN composer install --no-interaction --no-plugins --no-scripts --no-dev --prefer-dist --optimize-autoloader
+
+
+# --- Estágio 2: Compilação dos Assets com Node.js ---
+FROM node:20-alpine as node_assets
+
+WORKDIR /app
+COPY package.json package.json
+COPY package-lock.json package-lock.json
+COPY vite.config.js vite.config.js
+COPY tailwind.config.js tailwind.config.js
+COPY postcss.config.js postcss.config.js
+COPY resources/ resources/
+
+# <-- A LINHA MÁGICA VAI AQUI
+# Copia a pasta vendor do estágio anterior para que o Ziggy seja encontrado
+COPY --from=vendor /app/vendor/ /app/vendor/
+
+RUN npm install
+RUN npm run build
+
+
+# --- Estágio 3: Imagem Final de Produção ---
+# (Nenhuma mudança necessária aqui)
+FROM php:8.2-fpm-alpine
     
-    WORKDIR /var/www
-    
-    # Instala extensões PHP comuns para Laravel e dependências do sistema
-    RUN apk add --no-cache \
-          libpng-dev \
-          libzip-dev \
-          jpeg-dev \
-          freetype-dev \
-          postgresql-dev \
-          oniguruma-dev \
-          libxml2-dev \
-          supervisor \
-          && docker-php-ext-configure gd --with-freetype --with-jpeg \
-          && docker-php-ext-install \
-          gd \
-          zip \
-          pdo \
-          pdo_pgsql \
-          exif \
-          bcmath \
-          mbstring \
-          pcntl \
-          soap \
-          xml
-    
-    # Copia os arquivos da aplicação
-    COPY . .
-    
-    # Copia as dependências do Composer do estágio 'vendor'
-    COPY --from=vendor /app/vendor/ /var/www/vendor/
-    
-    # Copia os assets compilados do estágio 'node_assets'
-    COPY --from=node_assets /app/public/build /var/www/public/build
-    
-    # Ajusta permissões para o Laravel
-    RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-    RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-    
-    # Limpa o cache de configuração para garantir que as variáveis de ambiente sejam lidas
-    RUN php artisan config:clear && php artisan route:clear && php artisan view:clear
-    
-    # Expõe a porta 9000 para o PHP-FPM
-    EXPOSE 9000
-    
-    # Comando para iniciar o PHP-FPM
-    CMD ["php-fpm"]
+WORKDIR /var/www
+
+# Instala extensões PHP comuns para Laravel e dependências do sistema
+RUN apk add --no-cache \
+      libpng-dev \
+      libzip-dev \
+      jpeg-dev \
+      freetype-dev \
+      postgresql-dev \
+      oniguruma-dev \
+      libxml2-dev \
+      supervisor \
+      && docker-php-ext-configure gd --with-freetype --with-jpeg \
+      && docker-php-ext-install \
+      gd \
+      zip \
+      pdo \
+      pdo_pgsql \
+      exif \
+      bcmath \
+      mbstring \
+      pcntl \
+      soap \
+      xml
+
+# Copia os arquivos da aplicação
+COPY . .
+
+# Copia as dependências do Composer do estágio 'vendor'
+COPY --from=vendor /app/vendor/ /var/www/vendor/
+
+# Copia os assets compilados do estágio 'node_assets'
+COPY --from=node_assets /app/public/build /var/www/public/build
+
+# Ajusta permissões para o Laravel
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# Limpa o cache de configuração para garantir que as variáveis de ambiente sejam lidas
+RUN php artisan config:clear && php artisan route:clear && php artisan view:clear
+
+# Expõe a porta 9000 para o PHP-FPM
+EXPOSE 9000
+
+# Comando para iniciar o PHP-FPM
+CMD ["php-fpm"]
