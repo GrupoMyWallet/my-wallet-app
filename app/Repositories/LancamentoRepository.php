@@ -3,10 +3,9 @@
 namespace App\Repositories;
 
 use App\Models\Lancamento;
+use Carbon\Carbon;
 
 class LancamentoRepository
-
-
 
 {
     protected $model;
@@ -21,9 +20,28 @@ class LancamentoRepository
         return $this->model::with('categoria:id,nome')->where('user_id', $userId)->get();
     }
 
-    public function paginateLancamentosDoUsuarioComCategoria($userId, int $paginas = 10)
-    {
-        return $this->model::with('categoria:id,nome')->where('user_id', $userId)->paginate($paginas);
+    public function paginateLancamentosDoUsuarioComCategoria(array $filtros = [], $userId, int $paginas = 10)
+    {   
+        $query = $this->model::with('categoria:id,nome')
+        ->where('user_id', $userId);
+
+        if (!empty($filtros['categoria_id'])) {
+            $query->where('categoria_id', $filtros['categoria_id']);
+        }
+
+        if (!empty($filtros['tipo'])) {
+            $query->where('tipo', $filtros['tipo']);
+        }
+
+        if (!empty($filtros['ano'])) {
+            $query->whereYear('data', $filtros['ano']);
+        }
+
+        if (!empty($filtros['mes'])) {
+            $query->whereMonth('data', $filtros['mes']);
+        }
+
+        return $query->paginate($paginas);
 
     }
 
@@ -104,7 +122,7 @@ class LancamentoRepository
                             ->orWhere('fim_da_recorrencia', '>=', $dataInicio);
                       });
             })
-            ->with('categoria') // Se você tiver relacionamento com categoria
+            ->with('categoria')
             ->get();
     }
 
@@ -120,4 +138,87 @@ class LancamentoRepository
 
         return $this->getLancamentosAtivos($userId, $dataInicio, $dataFim);
     }
+    public function getByPeriodo(Carbon $inicio, Carbon $fim): Collection
+    {
+        return Lancamento::whereBetween('data', [$inicio, $fim])
+            ->orderBy('data', 'desc')
+            ->get();
+    }
+
+    public function getByCategoria(int $categoriaId, Carbon $inicio, Carbon $fim): Collection
+    {
+        return Lancamento::where('categoria_id', $categoriaId)
+            ->whereBetween('data', [$inicio, $fim])
+            ->get();
+    }
+
+    public function getReceitasDespesasPorMes(int $ano): Collection
+    {
+        return Lancamento::selectRaw('
+                MONTH(data) as mes,
+                tipo,
+                SUM(valor) as total
+            ')
+            ->whereYear('data', $ano)
+            ->groupBy('mes', 'tipo')
+            ->get()
+            ->groupBy('mes')
+            ->map(function ($items) {
+                return [
+                    'receitas' => $items->where('tipo', 'receita')->first()->total ?? 0,
+                    'despesas' => $items->where('tipo', 'despesa')->first()->total ?? 0,
+                    'saldo' => ($items->where('tipo', 'receita')->first()->total ?? 0) - 
+                              ($items->where('tipo', 'despesa')->first()->total ?? 0)
+                ];
+            });
+    }
+
+    public function getTotalPorTipo(string $tipo, Carbon $inicio, Carbon $fim): float
+    {
+        return Lancamento::where('tipo', $tipo)
+            ->whereBetween('data', [$inicio, $fim])
+            ->sum('valor');
+    }
+
+    public function getDespesasPorCategoria(Carbon $inicio, Carbon $fim): Collection
+    {
+        return Lancamento::select('categoria_id', DB::raw('SUM(valor) as total'))
+            ->where('tipo', 'despesa')
+            ->whereBetween('data', [$inicio, $fim])
+            ->groupBy('categoria_id')
+            ->with('categoria')
+            ->get();
+    }
+
+    public function getUltimasTransacoes(int $limite = 10): Collection
+    {
+        return Lancamento::with('categoria')
+            ->orderBy('data', 'desc')
+            ->limit($limite)
+            ->get();
+    }
+
+
+    public function getAnosDisponiveis(): array
+    {
+        $anos = Lancamento::selectRaw('DISTINCT YEAR(data) as ano')
+            ->orderBy('ano', 'desc')
+            ->pluck('ano')
+            ->toArray();
+            
+        return !empty($anos) ? $anos : [now()->year];
+    }
+
+    public function getLancamentosRecorrentes(Carbon $inicio, Carbon $fim): Collection
+    {
+        return Lancamento::where('intervalo_meses', '>', 0)
+            ->where('data', '<=', $fim)
+            ->where(function ($query) use ($fim) {
+                $query->whereNull('fim_da_recorrencia')
+                    ->orWhere('fim_da_recorrencia', '>=', $fim);
+            })
+            ->get();
+    }
+
+    
 }

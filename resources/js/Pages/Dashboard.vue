@@ -1,240 +1,3 @@
-<template>
-  <AppLayout>
-    <Head title="Dashboard Financeiro" />
-
-    
-      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <!-- Filtros -->
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-          <div class="p-6 border-b border-gray-200">
-            <h2 class="text-xl font-semibold mb-4">Filtros</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Ano</label>
-                <select v-model="filters.ano" @change="updateDashboard" 
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                  <option v-for="year in availableYears" :key="year" :value="year">
-                    {{ year }}
-                  </option>
-                </select>
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Mês</label>
-                <select v-model="filters.mes" @change="updateDashboard"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                  <option :value="null">Todos os meses</option>
-                  <option v-for="(month, index) in months" :key="index" :value="index + 1">
-                    {{ month }}
-                  </option>
-                </select>
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Categoria</label>
-                <select v-model="filters.categoria_id" @change="updateDashboard"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                  <option :value="null">Todas as categorias</option>
-                  <option v-for="categoria in dashboard.categorias" 
-                          :key="categoria.id" :value="categoria.id">
-                    {{ categoria.nome }}
-                  </option>
-                </select>
-              </div>
-              
-              <div class="flex items-end">
-                <button @click="resetFilters" 
-                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
-                        :disabled="loading">
-                  <span v-if="loading" class="inline-flex items-center">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Carregando...
-                  </span>
-                  <span v-else>Limpar Filtros</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Loading State -->
-        <div v-if="loading" class="flex justify-center items-center py-12">
-          <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-500"></div>
-        </div>
-
-        <!-- Dashboard Content -->
-        <div v-else>
-          <!-- Resumos -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <!-- Resumo Anual -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-              <div class="p-6">
-                <h3 class="text-lg font-semibold mb-4 text-gray-800">
-                  <i class="fas fa-calendar-alt mr-2 text-indigo-500"></i>
-                  Resumo Anual {{ filters.ano }}
-                </h3>
-                <div class="space-y-3">
-                  <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                    <span class="text-green-700 font-medium">
-                      <i class="fas fa-arrow-up mr-2"></i>Receitas:
-                    </span>
-                    <span class="font-bold text-green-800">
-                      {{ formatCurrency(dashboard.resumo_anual?.receitas || 0) }}
-                    </span>
-                  </div>
-                  <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                    <span class="text-red-700 font-medium">
-                      <i class="fas fa-arrow-down mr-2"></i>Despesas:
-                    </span>
-                    <span class="font-bold text-red-800">
-                      {{ formatCurrency(dashboard.resumo_anual?.despesas || 0) }}
-                    </span>
-                  </div>
-                  <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border-t-2 border-gray-300">
-                    <span class="font-bold text-gray-700">
-                      <i class="fas fa-wallet mr-2"></i>Saldo:
-                    </span>
-                    <span :class="(dashboard.resumo_anual?.saldo || 0) >= 0 ? 'text-green-600' : 'text-red-600'" 
-                          class="font-bold text-lg">
-                      {{ formatCurrency(dashboard.resumo_anual?.saldo || 0) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Resumo Mensal -->
-            <div v-if="dashboard.resumo_mensal" class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-              <div class="p-6">
-                <h3 class="text-lg font-semibold mb-4 text-gray-800">
-                  <i class="fas fa-calendar-day mr-2 text-blue-500"></i>
-                  Resumo {{ dashboard.resumo_mensal.nome_mes }} {{ dashboard.resumo_mensal.ano }}
-                </h3>
-                <div class="space-y-3">
-                  <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                    <span class="text-green-700 font-medium">
-                      <i class="fas fa-arrow-up mr-2"></i>Receitas:
-                    </span>
-                    <span class="font-bold text-green-800">
-                      {{ formatCurrency(dashboard.resumo_mensal.receitas) }}
-                    </span>
-                  </div>
-                  <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                    <span class="text-red-700 font-medium">
-                      <i class="fas fa-arrow-down mr-2"></i>Despesas:
-                    </span>
-                    <span class="font-bold text-red-800">
-                      {{ formatCurrency(dashboard.resumo_mensal.despesas) }}
-                    </span>
-                  </div>
-                  <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border-t-2 border-gray-300">
-                    <span class="font-bold text-gray-700">
-                      <i class="fas fa-wallet mr-2"></i>Saldo:
-                    </span>
-                    <span :class="dashboard.resumo_mensal.saldo >= 0 ? 'text-green-600' : 'text-red-600'" 
-                          class="font-bold text-lg">
-                      {{ formatCurrency(dashboard.resumo_mensal.saldo) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card de Informação quando não há mês selecionado -->
-            <div v-else class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-              <div class="p-6 text-center">
-                <i class="fas fa-info-circle text-4xl text-blue-500 mb-4"></i>
-                <h3 class="text-lg font-semibold mb-2 text-gray-800">Resumo Mensal</h3>
-                <p class="text-gray-600">Selecione um mês específico para ver o resumo mensal detalhado.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Gráficos -->
-          <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <!-- Gráfico Receitas vs Despesas -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-              <div class="p-6">
-                <h3 class="text-lg font-semibold mb-4 text-gray-800">
-                  <i class="fas fa-chart-bar mr-2 text-purple-500"></i>
-                  Receitas vs Despesas {{ filters.ano }}
-                </h3>
-                <div class="h-80">
-                  <Bar
-                    v-if="receitasDespesasChartData && receitasDespesasChartData.labels.length > 0"
-                    :data="receitasDespesasChartData"
-                    :options="receitasDespesasChartOptions"
-                  />
-                  <div v-else class="flex items-center justify-center h-full text-gray-500">
-                    <div class="text-center">
-                      <i class="fas fa-chart-bar text-4xl mb-2"></i>
-                      <p>Nenhum dado disponível</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Gráfico Orçamento vs Categoria -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-              <div class="p-6">
-                <h3 class="text-lg font-semibold mb-4 text-gray-800">
-                  <i class="fas fa-chart-line mr-2 text-orange-500"></i>
-                  Orçamento vs Despesas por Categoria
-                </h3>
-                <div class="h-80">
-                  <Bar
-                    v-if="orcamentoCategoriaChartData && orcamentoCategoriaChartData.labels.length > 0"
-                    :data="orcamentoCategoriaChartData"
-                    :options="orcamentoCategoriaChartOptions"
-                  />
-                  <div v-else class="flex items-center justify-center h-full text-gray-500">
-                    <div class="text-center">
-                      <i class="fas fa-chart-line text-4xl mb-2"></i>
-                      <p>Nenhum orçamento configurado</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Tabela de detalhes do orçamento -->
-                <div v-if="dashboard.grafico_orcamento_categoria?.dados?.length > 0" class="mt-6">
-                  <h4 class="text-md font-semibold mb-3 text-gray-700">Detalhes por Categoria</h4>
-                  <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                      <thead class="bg-gray-50">
-                        <tr>
-                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
-                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orçado</th>
-                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gasto</th>
-                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">%</th>
-                        </tr>
-                      </thead>
-                      <tbody class="bg-white divide-y divide-gray-200">
-                        <tr v-for="item in dashboard.grafico_orcamento_categoria.dados" :key="item.categoria">
-                          <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.categoria }}</td>
-                          <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(item.orcado) }}</td>
-                          <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(item.gasto) }}</td>
-                          <td class="px-4 py-2 whitespace-nowrap text-sm">
-                            <span :class="getPercentualClass(item.percentual)" class="px-2 py-1 rounded-full text-xs font-medium">
-                              {{ item.percentual.toFixed(1) }}%
-                            </span>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-  </AppLayout>
-</template>
-
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Head } from '@inertiajs/vue3'
@@ -308,7 +71,7 @@ const receitasDespesasChartData = computed(() => {
   if (!grafico || !grafico.labels || grafico.labels.length === 0) {
     return null
   }
-  
+
   return {
     labels: grafico.labels,
     datasets: [
@@ -359,10 +122,10 @@ const receitasDespesasChartOptions = {
         color: 'rgba(0, 0, 0, 0.1)',
       },
       ticks: {
-        callback: function(value) {
-          return 'R$ ' + value.toLocaleString('pt-BR', { 
+        callback: function (value) {
+          return 'R$ ' + value.toLocaleString('pt-BR', {
             minimumFractionDigits: 0,
-            maximumFractionDigits: 0 
+            maximumFractionDigits: 0
           })
         },
         font: {
@@ -392,7 +155,7 @@ const receitasDespesasChartOptions = {
       cornerRadius: 8,
       displayColors: true,
       callbacks: {
-        label: function(context) {
+        label: function (context) {
           return context.dataset.label + ': ' + formatCurrency(context.parsed.y)
         }
       }
@@ -410,7 +173,7 @@ const orcamentoCategoriaChartData = computed(() => {
   if (!grafico || !grafico.labels || grafico.labels.length === 0) {
     return null
   }
-  
+
   return {
     labels: grafico.labels,
     datasets: [
@@ -462,10 +225,10 @@ const orcamentoCategoriaChartOptions = {
         color: 'rgba(0, 0, 0, 0.1)',
       },
       ticks: {
-        callback: function(value) {
-          return 'R$ ' + value.toLocaleString('pt-BR', { 
+        callback: function (value) {
+          return 'R$ ' + value.toLocaleString('pt-BR', {
             minimumFractionDigits: 0,
-            maximumFractionDigits: 0 
+            maximumFractionDigits: 0
           })
         },
         font: {
@@ -495,7 +258,7 @@ const orcamentoCategoriaChartOptions = {
       cornerRadius: 8,
       displayColors: true,
       callbacks: {
-        label: function(context) {
+        label: function (context) {
           return context.dataset.label + ': ' + formatCurrency(context.parsed.y)
         }
       }
@@ -509,7 +272,7 @@ const orcamentoCategoriaChartOptions = {
 
 const updateDashboard = async () => {
   loading.value = true
-  
+
   try {
     router.get('/dashboard', filters.value, {
       preserveState: true,
@@ -542,6 +305,250 @@ onMounted(() => {
 })
 </script>
 
+<template>
+  <AppLayout>
+
+    <Head title="Dashboard Financeiro" />
+
+
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+      <!-- Filtros -->
+      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+        <div class="p-6 border-b border-gray-200">
+          <h2 class="text-xl font-semibold mb-4">Filtros</h2>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Ano</label>
+              <select v-model="filters.ano" @change="updateDashboard"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <option v-for="year in availableYears" :key="year" :value="year">
+                  {{ year }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Mês</label>
+              <select v-model="filters.mes" @change="updateDashboard"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <option :value="null">Todos os meses</option>
+                <option v-for="(month, index) in months" :key="index" :value="index + 1">
+                  {{ month }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Categoria</label>
+              <select v-model="filters.categoria_id" @change="updateDashboard"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <option :value="null">Todas as categorias</option>
+                <option v-for="categoria in dashboard.categorias" :key="categoria.id" :value="categoria.id">
+                  {{ categoria.nome }}
+                </option>
+              </select>
+            </div>
+
+            <div class="flex items-end">
+              <button @click="resetFilters"
+                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+                :disabled="loading">
+                <span v-if="loading" class="inline-flex items-center">
+                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                  </svg>
+                  Carregando...
+                </span>
+                <span v-else>Limpar Filtros</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-500"></div>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div v-else>
+        <!-- Resumos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <!-- Resumo Anual -->
+          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                <i class="fas fa-calendar-alt mr-2 text-indigo-500"></i>
+                Resumo Anual {{ filters.ano }}
+              </h3>
+              <div class="space-y-3">
+                <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                  <span class="text-green-700 font-medium">
+                    <i class="fas fa-arrow-up mr-2"></i>Receitas:
+                  </span>
+                  <span class="font-bold text-green-800">
+                    {{ formatCurrency(dashboard.resumo_anual?.receitas || 0) }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                  <span class="text-red-700 font-medium">
+                    <i class="fas fa-arrow-down mr-2"></i>Despesas:
+                  </span>
+                  <span class="font-bold text-red-800">
+                    {{ formatCurrency(dashboard.resumo_anual?.despesas || 0) }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border-t-2 border-gray-300">
+                  <span class="font-bold text-gray-700">
+                    <i class="fas fa-wallet mr-2"></i>Saldo:
+                  </span>
+                  <span :class="(dashboard.resumo_anual?.saldo || 0) >= 0 ? 'text-green-600' : 'text-red-600'"
+                    class="font-bold text-lg">
+                    {{ formatCurrency(dashboard.resumo_anual?.saldo || 0) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumo Mensal -->
+          <div v-if="dashboard.resumo_mensal" class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                <i class="fas fa-calendar-day mr-2 text-blue-500"></i>
+                Resumo {{ dashboard.resumo_mensal.nome_mes }} {{ dashboard.resumo_mensal.ano }}
+              </h3>
+              <div class="space-y-3">
+                <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                  <span class="text-green-700 font-medium">
+                    <i class="fas fa-arrow-up mr-2"></i>Receitas:
+                  </span>
+                  <span class="font-bold text-green-800">
+                    {{ formatCurrency(dashboard.resumo_mensal.receitas) }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                  <span class="text-red-700 font-medium">
+                    <i class="fas fa-arrow-down mr-2"></i>Despesas:
+                  </span>
+                  <span class="font-bold text-red-800">
+                    {{ formatCurrency(dashboard.resumo_mensal.despesas) }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border-t-2 border-gray-300">
+                  <span class="font-bold text-gray-700">
+                    <i class="fas fa-wallet mr-2"></i>Saldo:
+                  </span>
+                  <span :class="dashboard.resumo_mensal.saldo >= 0 ? 'text-green-600' : 'text-red-600'"
+                    class="font-bold text-lg">
+                    {{ formatCurrency(dashboard.resumo_mensal.saldo) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card de Informação quando não há mês selecionado -->
+          <div v-else class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 text-center">
+              <i class="fas fa-info-circle text-4xl text-blue-500 mb-4"></i>
+              <h3 class="text-lg font-semibold mb-2 text-gray-800">Resumo Mensal</h3>
+              <p class="text-gray-600">Selecione um mês específico para ver o resumo mensal detalhado.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <!-- Gráfico Receitas vs Despesas -->
+          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                <i class="fas fa-chart-bar mr-2 text-purple-500"></i>
+                Receitas vs Despesas {{ filters.ano }}
+              </h3>
+              <div class="h-80">
+                <Bar v-if="receitasDespesasChartData && receitasDespesasChartData.labels.length > 0"
+                  :data="receitasDespesasChartData" :options="receitasDespesasChartOptions" />
+                <div v-else class="flex items-center justify-center h-full text-gray-500">
+                  <div class="text-center">
+                    <i class="fas fa-chart-bar text-4xl mb-2"></i>
+                    <p>Nenhum dado disponível</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gráfico Orçamento vs Categoria -->
+          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                <i class="fas fa-chart-line mr-2 text-orange-500"></i>
+                Orçamento vs Despesas por Categoria
+              </h3>
+              <div class="h-80">
+                <Bar v-if="orcamentoCategoriaChartData && orcamentoCategoriaChartData.labels.length > 0"
+                  :data="orcamentoCategoriaChartData" :options="orcamentoCategoriaChartOptions" />
+                <div v-else class="flex items-center justify-center h-full text-gray-500">
+                  <div class="text-center">
+                    <i class="fas fa-chart-line text-4xl mb-2"></i>
+                    <p>Nenhum orçamento configurado</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tabela de detalhes do orçamento -->
+              <div v-if="dashboard.grafico_orcamento_categoria?.dados?.length > 0" class="mt-6">
+                <h4 class="text-md font-semibold mb-3 text-gray-700">Detalhes por Categoria</h4>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Categoria</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Orçado</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gasto
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">%
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      <tr v-for="item in dashboard.grafico_orcamento_categoria.dados" :key="item.categoria">
+                        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.categoria }}
+                        </td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(item.orcado) }}
+                        </td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(item.gasto) }}
+                        </td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm">
+                          <span :class="getPercentualClass(item.percentual)"
+                            class="px-2 py-1 rounded-full text-xs font-medium">
+                            {{ item.percentual.toFixed(1) }}%
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </AppLayout>
+</template>
+
+
+
 <style scoped>
 .animate-spin {
   animation: spin 1s linear infinite;
@@ -551,6 +558,7 @@ onMounted(() => {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -570,7 +578,7 @@ select {
   .overflow-x-auto table {
     font-size: 0.875rem;
   }
-  
+
   .overflow-x-auto th,
   .overflow-x-auto td {
     padding: 0.5rem 0.25rem;

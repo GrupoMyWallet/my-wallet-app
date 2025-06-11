@@ -1,7 +1,7 @@
 <script setup>
 
-import { ref, reactive } from 'vue'
-import { Head, useForm, Link, usePage } from '@inertiajs/vue3';
+import { ref, reactive, watch } from 'vue'
+import { Head, useForm, Link, usePage, router} from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Tabela from '@/Components/Tabela.vue'
 import Modal from '@/Components/Modal.vue'
@@ -11,11 +11,49 @@ import InputError from '@/Components/InputError.vue'
 import InputLabel from '@/Components/InputLabel.vue'
 import Messages from '@/Components/Messages.vue'
 import Pagination from '@/Components/Pagination.vue';
+import Filtro from '@/Components/Filtro.vue';
 
 const props = defineProps({
     lancamentos: Object,
     categorias: Array,
+    filtros: Object,
 })
+
+const filtros = ref({
+    ano: props.filtros?.ano || '',
+    mes: props.filtros?.mes || '',
+    categoria_id: props.filtros?.categoria_id || '',
+    tipo: props.filtros?.tipo || ''
+});
+
+const loading = ref(false);
+
+const availableYears = [2025, 2024, 2023, 2022]; // Ajuste conforme seu backend
+const meses = {
+  1: 'Janeiro', 2: 'Fevereiro', 3: 'Março',
+  4: 'Abril', 5: 'Maio', 6: 'Junho',
+  7: 'Julho', 8: 'Agosto', 9: 'Setembro',
+  10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
+}
+
+function aplicarFiltros() {
+    
+    router.get('/lancamentos', filtros.value, {
+        preserveState: true,
+        preserveScroll: true
+    });  
+    
+}
+
+const resetFilters = () => {
+  filtros.value = {
+    ano: new Date().getFullYear(),
+    mes: '',
+    categoria_id: '',
+    tipo: ''
+  }
+  aplicarFiltros()
+}
 
 const estruturaInicialDoForm = {
   id: null,
@@ -152,7 +190,42 @@ const deleteItem = () => {
         <Messages/>
 
         <div class="p-6">
-            <div class="flex justify-end gap-4 mb-6">
+            
+            <Filtro :loading="loading" @update="aplicarFiltros" @reset="resetFilters">
+                <template #default="{ onChange }">
+                    <div>
+                    <label class="block text-sm font-medium text-gray-700">Ano</label>
+                    <select v-model="filtros.ano" @change="onChange" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">Todos os anos</option>
+                        <option v-for="year in availableYears" :key="year" :value="year">
+                        {{ year }}
+                        </option>
+                    </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mês</label>
+                        <select v-model="filtros.mes" @change="onChange" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Todos os meses</option>
+                        <option v-for="(nome, numero) in meses" :key="numero" :value="numero">{{ nome }}</option>
+                        </select>
+                    </div>
+
+                    <div>
+                    <label class="block text-sm font-medium text-gray-700">Categoria</label>
+                    <select v-model="filtros.categoria_id" @change="onChange"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">Todas as categorias</option>
+                        <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">
+                        {{ categoria.nome }}
+                        </option>
+                    </select>
+                    </div>
+                </template>
+            </Filtro>
+
+            <div class="flex justify-end gap-4 m-6">
                 <Link :href="route('lancamentos.create')" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

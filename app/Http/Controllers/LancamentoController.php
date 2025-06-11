@@ -26,12 +26,15 @@ class LancamentoController extends Controller
 
     public function index(Request $request)
     {   
+        $filtros = $request->only(['categoria_id', 'ano', 'mes']);
+        
         $userId = $request->user()->id;
-        $lancamentos = $this->lancamentoRepository->paginateLancamentosDoUsuarioComCategoria($userId, 10);
+        $lancamentos = $this->lancamentoRepository->paginateLancamentosDoUsuarioComCategoria($filtros, $userId, 10,);
         
         $categorias = $this->categoriaRepository->getCategoriasDoUsuario($userId);
 
         return Inertia::render('Lancamentos/Index', [
+            'filtros' => $filtros,
             'lancamentos' => $lancamentos,
             'categorias' => $categorias
         ]);

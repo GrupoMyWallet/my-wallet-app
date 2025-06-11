@@ -1,34 +1,116 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue';
 import TextInput from '@/Components/TextInput.vue'
 import InputError from '@/Components/InputError.vue'
 import InputLabel from '@/Components/InputLabel.vue'
 import SelectInput from '@/Components/SelectInput.vue'
 import Messages from '@/Components/Messages.vue'
+import Modal from '@/Components/Modal.vue'
 import { useForm, router } from '@inertiajs/vue3'
 
-// Props vindas do backend (categorias: todas as categorias para listar)
-defineProps({
+// Props vindas do backend
+const props = defineProps({
     categorias: Array,
     orcamentos: Array,
-    // Adapte se vier userId ou info extra
 })
 
 const form = useForm({
     nome: '',
-    tipo: 'despesa', // padrão
+    tipo: 'despesa',
 })
 
-// Função para submit
+const editForm = useForm({
+    id: null,
+    nome: '',
+    tipo: 'despesa',
+})
+
+const deleteForm = useForm({})
+
+// Estados dos modais
+const showEditModal = ref(false)
+const showDeleteModal = ref(false)
+const categoriaToDelete = ref(null)
+
+// Ordenação
+const ordenacao = ref('nome') // 'nome', 'tipo'
+
+// Categorias organizadas
+const categoriasOrganizadas = computed(() => {
+    const todasCategorias = props.categorias || []
+
+    // Separar categorias
+    let categoriasUsuario = todasCategorias.filter(cat => cat.user_id)
+    let categoriasGerais = todasCategorias.filter(cat => !cat.user_id)
+
+    // Função de ordenação
+    const ordenarCategorias = (cats) => {
+        return cats.sort((a, b) => {
+            if (ordenacao.value === 'tipo') {
+                if (a.tipo !== b.tipo) {
+                    return a.tipo.localeCompare(b.tipo)
+                }
+                return a.nome.localeCompare(b.nome)
+            }
+            return a.nome.localeCompare(b.nome)
+        })
+    }
+
+    return {
+        usuario: ordenarCategorias([...categoriasUsuario]),
+        gerais: ordenarCategorias([...categoriasGerais]),
+        total: todasCategorias.length
+    }
+})
+
+// Função para submit de nova categoria
 function submit() {
     form.post('/categorias', {
         onSuccess: () => form.reset()
     })
 }
 
-function cadastrarOrcamento(categoriaId) {
-    router.get(route('orcamentos.create', {categoria_id : categoriaId}))
+// Função para abrir modal de edição
+function editarCategoria(categoria) {
+    editForm.id = categoria.id
+    editForm.nome = categoria.nome
+    editForm.tipo = categoria.tipo
+    showEditModal.value = true
+}
+
+// Função para salvar edição
+function salvarEdicao() {
+    editForm.put(`/categorias/${editForm.id}`, {
+        onSuccess: () => {
+            showEditModal.value = false
+            editForm.reset()
+        }
+    })
+}
+
+// Função para abrir modal de exclusão
+function confirmarExclusao(categoria) {
+    categoriaToDelete.value = categoria
+    showDeleteModal.value = true
+}
+
+// Função para excluir categoria
+function excluirCategoria() {
+    deleteForm.delete(`/categorias/${categoriaToDelete.value.id}`, {
+        onSuccess: () => {
+            showDeleteModal.value = false
+            categoriaToDelete.value = null
+        }
+    })
+}
+
+// Função para fechar modais
+function fecharModais() {
+    showEditModal.value = false
+    showDeleteModal.value = false
+    categoriaToDelete.value = null
+    editForm.reset()
 }
 </script>
 
@@ -40,118 +122,224 @@ function cadastrarOrcamento(categoriaId) {
             </h2>
         </template>
 
-        <Messages/>
+        <Messages />
 
-        <div class="max-w-4xl mx-auto py-8 px-4 grid md:grid-cols-3 gap-10">
+        <div class="max-w-6xl mx-auto py-8 px-4 grid lg:grid-cols-4 gap-8">
 
             <!-- Listagem de categorias -->
-            <div class="md:col-span-2 space-y-4">
-                <div class="bg-white rounded-xl shadow p-6">
-                    <h3 class="text-lg font-bold mb-3 flex items-center gap-2">
-                        <span class="text-blue-600">Minhas Categorias</span>
-                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{{ categorias.length }}</span>
-                    </h3>
-                    <ul class="divide-y divide-gray-200">
-                        <li v-for="categoria in categorias" :key="categoria.id"
-                            class="flex justify-between items-center py-2">
-                            <div class="flex gap-2 items-center">
-                                <span :class="[
-                                    'w-2.5 h-2.5 rounded-full inline-block',
-                                    categoria.tipo === 'despesa' ? 'bg-red-500' : 'bg-green-500'
-                                ]"></span>
-                                <span class="font-medium">{{ categoria.nome }}</span>
-                                <span v-if="!categoria.user_id"
-                                    class="text-xs bg-gray-200 text-gray-500 rounded px-2 py-0.5 ml-2">Geral</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <a v-if="categoria.tipo === 'despesa'" @click.prevent="cadastrarOrcamento(categoria.id)" href="#"
-                                    class="inline-block text-sm text-green-700 hover:underline hover:text-green-800 transition"
-                                    :disabled="form.processing">
-                                    + Cadastrar orçamento
-                                </a>
-                                <span class="uppercase text-xs text-gray-500">{{ categoria.tipo }}</span>
+            <div class="bg-white rounded-xl shadow p-6 lg:col-span-3 space-y-6">
 
+                <!-- Header com ordenação -->
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <h3 class="text-2xl font-bold text-gray-800">Suas Categorias</h3>
+                        <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                            {{ categoriasOrganizadas.total }} total
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-600">Ordenar por:</span>
+                        <select v-model="ordenacao"
+                            class="text-sm border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 bg-white">
+                            <option value="nome">Nome</option>
+                            <option value="tipo">Tipo</option>
+                        </select>
+                    </div>
+                </div>
 
+                <!-- Minhas Categorias -->
+                <div v-if="categoriasOrganizadas.usuario.length > 0"
+                    class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-blue-900">Minhas Categorias</h4>
+                        <span class="bg-blue-200 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                            {{ categoriasOrganizadas.usuario.length }}
+                        </span>
+                    </div>
+
+                    <div class="grid gap-3">
+                        <div v-for="categoria in categoriasOrganizadas.usuario" :key="categoria.id"
+                            class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <span :class="[
+                                            'w-3 h-3 rounded-full',
+                                            categoria.tipo === 'despesa' ? 'bg-red-500' : 'bg-green-500'
+                                        ]"></span>
+                                        <span class="font-medium text-gray-900">{{ categoria.nome }}</span>
+                                    </div>
+                                    <span :class="[
+                                        'text-xs font-medium px-2 py-1 rounded-full uppercase tracking-wide',
+                                        categoria.tipo === 'despesa'
+                                            ? 'bg-red-100 text-red-700'
+                                            : 'bg-green-100 text-green-700'
+                                    ]">
+                                        {{ categoria.tipo }}
+                                    </span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button @click="editarCategoria(categoria)"
+                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">
+                                        Editar
+                                    </button>
+                                    <button @click="confirmarExclusao(categoria)"
+                                        class="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 rounded-lg hover:bg-red-50 transition-colors">
+                                        Excluir
+                                    </button>
+                                </div>
                             </div>
-                        </li>
-                    </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categorias Gerais -->
+                <div v-if="categoriasOrganizadas.gerais.length > 0"
+                    class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 bg-gray-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-700">Categorias Existentes</h4>
+                        <span class="bg-gray-200 text-gray-700 text-xs font-medium px-2 py-1 rounded-full">
+                            {{ categoriasOrganizadas.gerais.length }}
+                        </span>
+                    </div>
+
+                    <div class="grid gap-3">
+                        <div v-for="categoria in categoriasOrganizadas.gerais" :key="categoria.id"
+                            class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <span :class="[
+                                            'w-3 h-3 rounded-full',
+                                            categoria.tipo === 'despesa' ? 'bg-red-500' : 'bg-green-500'
+                                        ]"></span>
+                                        <span class="font-medium text-gray-700">{{ categoria.nome }}</span>
+                                    </div>
+                                    <span :class="[
+                                        'text-xs font-medium px-2 py-1 rounded-full uppercase tracking-wide',
+                                        categoria.tipo === 'despesa'
+                                            ? 'bg-red-100 text-red-700'
+                                            : 'bg-green-100 text-green-700'
+                                    ]">
+                                        {{ categoria.tipo }}
+                                    </span>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensagem quando não há categorias -->
+                <div v-if="categoriasOrganizadas.total === 0"
+                    class="bg-white rounded-2xl p-12 text-center border-2 border-dashed border-gray-200">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhuma categoria encontrada</h3>
+                    <p class="text-gray-500">Comece criando sua primeira categoria</p>
                 </div>
             </div>
 
             <!-- Formulário -->
-            <div class="bg-white rounded-xl shadow p-6">
-                <h3 class="font-bold mb-4 text-gray-700">Criar Nova Categoria</h3>
-                <form @submit.prevent="submit" class="space-y-4">
-                    <div>
-                        <InputLabel for="nome" value="Nome" :required="true" />
-                        <TextInput  
-                            id="nome" 
-                            type="text" 
-                            v-model="form.nome" 
-                            class="mt-1 block w-full" 
-                            step="0.01"
-                            required />
-                        <InputError class="mt-2" :message="form.errors.nome" />
+            <div>
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h3 class="font-bold mb-4 text-gray-700">Criar Nova Categoria</h3>
+                    <form @submit.prevent="submit" class="space-y-4">
+                        <div>
+                            <InputLabel for="nome" value="Nome" :required="true" />
+                            <TextInput id="nome" type="text" v-model="form.nome" class="mt-1 block w-full" step="0.01"
+                                required />
+                            <InputError class="mt-2" :message="form.errors.nome" />
                         </div>
-                    <div>
+                        <div>
 
-                        <InputLabel for="tipo" value="Tipo" :required="true" />
-                        <SelectInput v-model="form.tipo">
+                            <InputLabel for="tipo" value="Tipo" :required="true" />
+                            <SelectInput v-model="form.tipo">
+                                <option value="despesa">Despesa</option>
+                                <option value="receita">Receita</option>
+                            </SelectInput>
+                            <InputError class="mt-2" :message="form.errors.tipo" />
+                        </div>
+                        <button type="submit" :disabled="form.processing"
+                            class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
+                            Cadastrar Categoria
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Modal de Edição -->
+        <Modal :show="showEditModal" @close="fecharModais">
+            <div class="p-6">
+                <h3 class="text-lg font-bold mb-4">Editar Categoria</h3>
+                <form @submit.prevent="salvarEdicao" class="space-y-4">
+                    <div>
+                        <InputLabel for="edit_nome" value="Nome" :required="true" />
+                        <TextInput id="edit_nome" type="text" v-model="editForm.nome" class="mt-1 block w-full"
+                            required />
+                        <InputError class="mt-2" :message="editForm.errors.nome" />
+                    </div>
+                    <div>
+                        <InputLabel for="edit_tipo" value="Tipo" :required="true" />
+                        <SelectInput v-model="editForm.tipo">
                             <option value="despesa">Despesa</option>
                             <option value="receita">Receita</option>
                         </SelectInput>
-                        <InputError class="mt-2" :message="form.errors.tipo" />
+                        <InputError class="mt-2" :message="editForm.errors.tipo" />
                     </div>
-                    <button type="submit" :disabled="form.processing"
-                        class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
-                        Cadastrar Categoria
-                    </button>
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" @click="fecharModais"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+                            Cancelar
+                        </button>
+                        <button type="submit" :disabled="editForm.processing"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            Salvar Alterações
+                        </button>
+                    </div>
                 </form>
             </div>
-        </div>
-        <div class="max-w-4xl mx-auto py-8 px-4">
-            <h3 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <span class="text-green-700">Orçamento Mensal</span>
-                <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">{{ categorias.length }}</span>
-            </h3>
-            <ul class="bg-white rounded-2xl shadow-lg divide-y divide-gray-100">
-                <template v-for="categoria in categorias">
-                    <li
-                    
-                    v-if="categoria.tipo === 'despesa'"
-                    :key="categoria.id"
-                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 gap-2 hover:bg-gray-50 transition"
-                >
-                    <div class="flex items-center gap-2">
-                        <span class="font-semibold text-base text-gray-800">{{ categoria.nome }}</span>
-                        <span
-                            v-if="categoria.tipo === 'despesa'"
-                            class="inline-block bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs"
-                        >Despesa</span>
-                        <span
-                            v-else
-                            class="inline-block bg-blue-50 text-blue-400 px-2 py-0.5 rounded text-xs"
-                        >Receita</span>
-                    </div>
+        </Modal>
 
-                    <div class="flex items-center gap-3">
-                        <span v-if="categoria.orcamento" class="inline-flex items-center gap-1 font-bold text-green-700 text-lg">
-                            R$
-                            <span>{{ Number(categoria.orcamento.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) }}</span>
-                            <span class="text-xs text-gray-500 ml-1">/ mês</span>
-                        </span>
-                        <span v-else class="inline-flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded text-sm font-medium">
-                            Sem orçamento
-                        </span>
-                        
-                    </div>
-                    
-                </li>
-                </template>
-                
-            </ul>
-        </div>
-
-
+        <!-- Modal de Confirmação de Exclusão -->
+        <Modal :show="showDeleteModal" @close="fecharModais">
+            <div class="p-6">
+                <h3 class="text-lg font-bold mb-4 text-red-600">Confirmar Exclusão</h3>
+                <p class="mb-6">
+                    Tem certeza que deseja excluir a categoria
+                    <strong>"{{ categoriaToDelete?.nome }}"</strong>?
+                    Esta ação não pode ser desfeita.
+                </p>
+                <div class="flex justify-end gap-3">
+                    <button type="button" @click="fecharModais"
+                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+                        Cancelar
+                    </button>
+                    <button @click="excluirCategoria" :disabled="deleteForm.processing"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                        Excluir Categoria
+                    </button>
+                </div>
+            </div>
+        </Modal>
     </AppLayout>
 </template>

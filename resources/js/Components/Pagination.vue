@@ -13,16 +13,16 @@ const props = defineProps({
 <template>
     <!-- Só exibe a paginação se houver mais de uma página -->
     <div v-if="pagination.last_page > 1" class="flex justify-center items-center space-x-1 mt-4">
-      <!-- Itera em cada item de links gerado pelo Laravel -->
+      
       <span v-for="link in pagination.links" :key="link.label + String(link.url)">
-        <!-- Se não houver URL (por exemplo o "..." ou página ativa sem link), exibe um <span> desabilitado -->
+        
         <span
           v-if="!link.url"
           class="px-3 py-1 border border-gray-300 rounded text-gray-400 cursor-default select-none"
           v-html="link.label"
         ></span>
   
-        <!-- Caso haja URL, usa o <Link> do Inertia para navegar -->
+       
         <Link
           v-else
           :href="link.url"
