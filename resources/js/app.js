@@ -10,7 +10,7 @@ import maskDecimal from './directives/maskDecimal'
 
 
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = 'MyWallet';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
