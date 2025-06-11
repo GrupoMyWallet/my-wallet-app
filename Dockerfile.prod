@@ -26,7 +26,6 @@ COPY --from=vendor /app/vendor/ /app/vendor/
 RUN npm install
 RUN npm run build
 
-
 # --- Estágio 3: Imagem Final de Produção ---
 # (Nenhuma mudança necessária aqui)
 FROM php:8.2-fpm-alpine
