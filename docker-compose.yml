@@ -27,12 +27,11 @@ services:
       - "443:443"
     volumes:
       - .:/var/www
-      # AQUI ESTÁ A MUDANÇA: o caminho agora aponta para a pasta 'docker'
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./certbot/conf:/etc/letsencrypt
+      # MUDE ESTAS LINHAS - usar certificados do host:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
       - ./certbot/www:/var/www/certbot
       - ./nginx/html:/var/www/html
-      
     depends_on:
       - app
     networks:
