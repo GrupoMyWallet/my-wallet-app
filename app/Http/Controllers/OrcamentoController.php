@@ -2,73 +2,108 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Orcamento;
-use Inertia\Inertia;
-use Carbon\Carbon;
+use App\Http\Requests\OrcamentoRequest;
+use App\Models\Categoria;
 use App\Repositories\OrcamentoRepository;
 use App\Repositories\CategoriaRepository;
-use App\Http\Requests\OrcamentoRequest;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class OrcamentoController extends Controller
 {
-    protected $categoriaRepository;
-    protected $orcamentoRepository;
-
-    public function __construct(CategoriaRepository $categoriaRepository, OrcamentoRepository $orcamentoRepository)
-    {
-        $this->categoriaRepository = $categoriaRepository;
-        $this->orcamentoRepository = $orcamentoRepository;
-    }
+    public function __construct(
+        private OrcamentoRepository $orcamentoRepository,
+        private CategoriaRepository $categoriaRepository
+    ) {}
 
     public function index(Request $request)
-    {   
-
-        $userId = $request->user()->id;
-
-        $categorias = $this->categoriaRepository->getCategoriasComOrçamento($userId);
-    
-        return Inertia::render('Categorias/Index', [
-            'categorias' => $categorias,
-        ]);
-    }
-
-    public function create(Request $request)
     {
+        $filtros = $request->only(['categoria_id', 'tipo', 'ano', 'mes']);
         
-        $categoriaId = $request->query('categoria_id');
-        $categoria = null;
-        $userId = $request->user()->id;
-
-        if ($categoriaId) {
-            $categoria = $this->categoriaRepository->findOrFail($categoriaId);
+        $orcamentos = $this->orcamentoRepository->paginate($filtros);
+        $categorias = $this->categoriaRepository->getCategoriasDespesas();
+        
+        $categoriaSelecionada = null;
+        if ($request->categoria_id) {
+            $categoriaSelecionada = $this->categoriaRepository->findOrFail($request->categoria_id);
         }
 
-        $categorias = $this->categoriaRepository->getCategoriasComOrçamento($userId);
-
-        return inertia('Orcamentos/Create', [
-            'categoria_selecionada' => $categoria,
+        return Inertia::render('Orcamentos/Index', [
+            'orcamentos' => $orcamentos,
             'categorias' => $categorias,
+            'filtros' => $filtros,
+            'categoria_selecionada' => $categoriaSelecionada
         ]);
-    }
-
-    public function show(Request $request): Response
-    {
-        
-
-
     }
 
     public function store(OrcamentoRequest $request)
-    {   
-        $userId = $request->user()->id;
-        $orcamento_validado = $request->validated();
-        $orcamento_validado['user_id'] = $userId;
-
-        $orcamento = Orcamento::create($orcamento_validado);
+    {
+        $data = $request->validated();
         
+        
+        if ($this->orcamentoRepository->existeOrcamento(
+            $data['categoria_id'],
+            $data['tipo'],
+            $data['ano'],
+            $data['mes'] ?? null
+        )) {
+            return back()->withErrors([
+                'geral' => 'Já existe um orçamento para esta categoria e período.'
+            ]);
+        }
 
-        return redirect()->route('categorias.index')->with('success', 'Orçamento cadastrado com sucesso!');
+        $data['user_id'] = auth()->id();
+
+        $this->orcamentoRepository->create($data);
+
+        return redirect()->route('orcamentos.index')
+            ->with('success', 'Orçamento criado com sucesso!');
+    }
+
+    public function update(OrcamentoRequest $request, int $id)
+    {
+        $orcamento = $this->orcamentoRepository->findById($id);
+        
+        if (!$orcamento) {
+            return back()->withErrors(['geral' => 'Orçamento não encontrado.']);
+        }
+
+        $data = $request->validated();
+        
+        // Verificar se já existe outro orçamento para esta categoria/tipo/período
+        if ($this->orcamentoRepository->existeOrcamento(
+            $data['categoria_id'],
+            $data['tipo'],
+            $data['ano'],
+            $data['mes'] ?? null
+        ) && (
+            $orcamento->categoria_id != $data['categoria_id'] ||
+            $orcamento->tipo != $data['tipo'] ||
+            $orcamento->ano != $data['ano'] ||
+            $orcamento->mes != ($data['mes'] ?? null)
+        )) {
+            return back()->withErrors([
+                'geral' => 'Já existe um orçamento para esta categoria e período.'
+            ]);
+        }
+
+        $this->orcamentoRepository->update($orcamento, $data);
+
+        return redirect()->route('orcamentos.index')
+            ->with('success', 'Orçamento atualizado com sucesso!');
+    }
+
+    public function destroy(int $id)
+    {
+        $orcamento = $this->orcamentoRepository->findById($id);
+        
+        if (!$orcamento) {
+            return back()->withErrors(['geral' => 'Orçamento não encontrado.']);
+        }
+
+        $this->orcamentoRepository->delete($orcamento);
+
+        return redirect()->route('orcamentos.index')
+            ->with('success', 'Orçamento excluído com sucesso!');
     }
 }

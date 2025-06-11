@@ -15,11 +15,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('categoria_id')->constrained()->onDelete('cascade');
-            $table->enum('tipo', ['anual', 'mensal_padrao', 'mensal_excecao']);
-            $table->integer('ano');
-            $table->integer('mes')->nullable(); 
-            $table->decimal('valor', 15, 2);
+            $table->enum('tipo', ['mensal', 'anual']);
+            $table->year('ano');
+            $table->tinyInteger('mes')->nullable(); // 1-12, null para orçamentos anuais
+            $table->decimal('valor', 10, 2);
             $table->timestamps();
+            
+            // Índices para performance
+            $table->index(['categoria_id', 'tipo', 'ano', 'mes']);
+            $table->unique(['categoria_id', 'tipo', 'ano', 'mes'], 'unique_orcamento');
         });
     }
     /**

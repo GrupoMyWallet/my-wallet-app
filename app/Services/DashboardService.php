@@ -20,7 +20,7 @@ class DashboardService
 
         return [
             'resumo_anual' => $this->getResumoAnual($userId, $ano, $categoriaId),
-            'resumo_mensal' => $mes ? $this->getResumoMensal($userId, $ano, $mes, $categoriaId) : null,
+            'resumo_mensal' => $this->getResumoMensal($userId, $ano, $mes, $categoriaId),
             'grafico_receitas_despesas' => $this->getGraficoReceitasDespesas($userId, $ano, $categoriaId),
             'grafico_orcamento_categoria' => $this->getGraficoOrcamentoCategoria($userId, $ano, $mes, $categoriaId),
             'categorias' => $this->repository->getCategorias($userId),
@@ -48,8 +48,12 @@ class DashboardService
         ];
     }
 
-    private function getResumoMensal(int $userId, int $ano, int $mes, ?int $categoriaId = null): array
+    private function getResumoMensal(int $userId, ?int $ano = null, ?int $mes = null, ?int $categoriaId = null): array
     {
+        
+        $ano = $ano ?? now()->year;
+        $mes = $mes ?? now()->month;
+        
         $filters = [
             'data_inicio' => Carbon::create($ano, $mes)->startOfMonth(),
             'data_fim' => Carbon::create($ano, $mes)->endOfMonth(),
@@ -143,8 +147,7 @@ class DashboardService
     {
         return match ($orcamento->tipo) {
             'anual' => $mes ? $orcamento->valor / 12 : $orcamento->valor,
-            'mensal_padrao' => $orcamento->valor,
-            'mensal_excecao' => $orcamento->valor,
+            'mensal' => $orcamento->valor,
             default => 0,
         };
     }
