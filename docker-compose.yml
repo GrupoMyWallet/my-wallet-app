@@ -1,56 +1,62 @@
-version: "3.8"
+# docker-compose.yml
+
+version: '3.8'
 
 services:
+  # Serviço da Aplicação (Laravel/PHP)
   app:
     build:
+      args:
+        user: eduardo01 
+        uid: 1000 
       context: .
-      dockerfile: Dockerfile
-    container_name: mywallet_app
-    restart: always
-    working_dir: /var/www/html
-    volumes:
-      - ./:/var/www/html
-    environment:
-      DB_HOST: db
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_DATABASE: ${DB_DATABASE}
-    ports:
-      - "8000:80"
-    depends_on:
-      - db
-    command: bash -c "chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache && apache2-foreground"
-
-
-  vite:
-    image: node:20
-    container_name: vite_dev
-    working_dir: /var/www/html
-    volumes:
-      - ./:/var/www/html
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
-    ports:
+    image: meu-projeto-laravel
+    container_name: my-wallet-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    ports: 
       - "5173:5173"
-    depends_on:
-      - app
+    volumes:
+      - ./:/var/www
+    networks:
+      - laravel-network
 
+  # Serviço do Banco de Dados (PostgreSQL)
   db:
-    image: postgres:15
-    container_name: postgres_db
-    restart: always
+    image: postgres:15-alpine
+    container_name: meu-projeto-db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    ports:
+      - "${DB_PORT_FORWARD}:5432" # Expõe a porta para acesso externo (ex: DBeaver)
+    networks:
+      - laravel-network
+
+  # Serviço do Servidor Web (Nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: meu-projeto-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80" 
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - laravel-network
+    depends_on:
+      - app
+      - db
+
+networks:
+  laravel-network:
+    driver: bridge
 
 volumes:
   pgdata:
+    driver: local
