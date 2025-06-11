@@ -14,7 +14,7 @@ defineProps({
         <header class="absolute top-0 left-0 w-full z-20 px-4 py-6 sm:px-8">
             
                 <div class="flex justify-center lg:col-start-2">
-                    <MyWalletLogo color="text-white"/>
+                    <MyWalletLogo color="text-black dark:text-white"/>
                 </div>
             
         </header>
