@@ -35,6 +35,18 @@ class CategoriaRepository
         return $this->model::findOrFail($id);
     }
 
+    public function update(int $id, array $data)
+    {
+        $categoria = $this->model->findOrFail($id);
+        $categoria->update($data);
+        return $categoria;
+    }
+
+    public function delete(int $id)
+    {
+        return $this->model->findOrFail($id)->delete();
+    }
+
     public function getCategoriasDespesas()
     {
         return $this->model

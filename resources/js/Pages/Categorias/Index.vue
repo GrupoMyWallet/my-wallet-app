@@ -72,7 +72,7 @@ function submit() {
 }
 
 // Função para abrir modal de edição
-function editarCategoria(categoria) {
+function openEditModal(categoria) {
     editForm.id = categoria.id
     editForm.nome = categoria.nome
     editForm.tipo = categoria.tipo
@@ -90,7 +90,7 @@ function salvarEdicao() {
 }
 
 // Função para abrir modal de exclusão
-function confirmarExclusao(categoria) {
+function openDeleteModal(categoria) {
     categoriaToDelete.value = categoria
     showDeleteModal.value = true
 }
@@ -124,10 +124,10 @@ function fecharModais() {
 
         <Messages />
 
-        <div class="max-w-6xl mx-auto py-8 px-4 grid lg:grid-cols-4 gap-8">
+        <div class="max-w-4xl mx-auto py-8 px-4 grid md:grid-cols-3 gap-10">
 
             <!-- Listagem de categorias -->
-            <div class="bg-white rounded-xl shadow p-6 lg:col-span-3 space-y-6">
+            <div class="bg-white rounded-xl shadow p-4 space-y-4 md:col-span-2">
 
                 <!-- Header com ordenação -->
                 <div class="flex justify-between items-center">
@@ -185,13 +185,17 @@ function fecharModais() {
                                     </span>
                                 </div>
                                 <div class="flex gap-2">
-                                    <button @click="editarCategoria(categoria)"
-                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">
-                                        Editar
+                                    <button @click="openEditModal(categoria)" 
+                                        class="text-blue-600 hover:text-blue-800 p-1 rounded">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
                                     </button>
-                                    <button @click="confirmarExclusao(categoria)"
-                                        class="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 rounded-lg hover:bg-red-50 transition-colors">
-                                        Excluir
+                                    <button @click="openDeleteModal(categoria)" 
+                                        class="text-red-600 hover:text-red-800 p-1 rounded">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
                                     </button>
                                 </div>
                             </div>
@@ -257,7 +261,7 @@ function fecharModais() {
             </div>
 
             <!-- Formulário -->
-            <div>
+            <div >
                 <div class="bg-white rounded-xl shadow p-6">
                     <h3 class="font-bold mb-4 text-gray-700">Criar Nova Categoria</h3>
                     <form @submit.prevent="submit" class="space-y-4">
