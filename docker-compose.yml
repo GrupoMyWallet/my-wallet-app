@@ -1,62 +1,60 @@
-# docker-compose.yml
-
 version: '3.8'
 
 services:
-  # Serviço da Aplicação (Laravel/PHP)
+  # Serviço da Aplicação mywallet
   app:
     build:
-      args:
-        user: eduardo01 
-        uid: 1000 
       context: .
-    image: meu-projeto-laravel
-    container_name: my-wallet-app
+      dockerfile: Dockerfile.prod
+    container_name: mywallet_app
     restart: unless-stopped
-    working_dir: /var/www/
-    ports: 
-      - "5173:5173"
+    working_dir: /var/www
     volumes:
-      - ./:/var/www
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    depends_on:
+      - postgres
     networks:
-      - laravel-network
+      - mywallet
 
-  # Serviço do Banco de Dados (PostgreSQL)
-  db:
+  # Serviço do Nginx (Reverse Proxy)
+  nginx:
+    image: nginx:alpine
+    container_name: mywallet_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .:/var/www
+      # AQUI ESTÁ A MUDANÇA: o caminho agora aponta para a pasta 'docker'
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - app
+    networks:
+      - mywallet
+
+  # Serviço do Banco de Dados PostgreSQL
+  postgres:
     image: postgres:15-alpine
-    container_name: meu-projeto-db
+    container_name: mywallet_postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "${DB_PORT_FORWARD}:5432" # Expõe a porta para acesso externo (ex: DBeaver)
+      - postgres-data:/var/lib/postgresql/data
+    
     networks:
-      - laravel-network
-
-  # Serviço do Servidor Web (Nginx)
-  nginx:
-    image: nginx:alpine
-    container_name: meu-projeto-nginx
-    restart: unless-stopped
-    ports:
-      - "8000:80" 
-    volumes:
-      - ./:/var/www
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      - laravel-network
-    depends_on:
-      - app
-      - db
+      - mywallet
 
 networks:
-  laravel-network:
+  mywallet:
     driver: bridge
 
 volumes:
-  pgdata:
+  postgres-data:
     driver: local
