@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install -y \
     vim \
     unzip \
     libxml2-dev \
+    libonig-dev \
     libzip-dev \
     libpq-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
