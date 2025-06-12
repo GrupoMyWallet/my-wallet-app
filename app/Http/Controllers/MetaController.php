@@ -13,7 +13,7 @@ class MetaController extends Controller
 {   
     protected $metaRepository;
 
-    public function __construct(metaRepository $metaRepository)
+    public function __construct(MetaRepository $metaRepository)
     {
         $this->metaRepository = $metaRepository;
     }
@@ -61,6 +61,10 @@ class MetaController extends Controller
                 'data_final'         => 'nullable|date_format:d/m/Y',
                 'status'             => 'required|in:pendente,andamento,completa,cancelada',
             ]);
+
+            if ($validated['data_final']) {
+                $validated['data_final'] =  Carbon::createFromFormat('d/m/Y', $validated['data_final'])->format('Y-m-d');
+            }
 
             $this->metaRepository->update($id, $validated);
 

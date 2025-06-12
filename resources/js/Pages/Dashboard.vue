@@ -285,7 +285,7 @@ const updateDashboard = async () => {
       }
     })
   } catch (error) {
-    console.error('Erro ao atualizar dashboard:', error)
+    
     loading.value = false
   }
 }
@@ -300,8 +300,7 @@ const resetFilters = () => {
 }
 
 onMounted(() => {
-  // Dashboard já carregado via props
-  console.log('Dashboard carregado:', dashboard.value)
+  
 })
 </script>
 

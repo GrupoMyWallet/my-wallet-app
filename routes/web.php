@@ -8,6 +8,7 @@ use App\Http\Controllers\OrcamentoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImportController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -57,6 +58,20 @@ Route::middleware([
         Route::put('/orcamentos/{id}', 'update')->name('orcamentos.update');
         Route::delete('/orcamentos/{id}', 'destroy')->name('orcamentos.destroy'); 
     });
+
+    Route::get('/lancamentos/import', [ImportController::class, 'index'])
+        ->name('lancamentos.import');
+
+    
+    Route::post('/lancamentos/import/spreadsheets', [ImportController::class, 'importSpreadsheets'])
+        ->name('lancamentos.import.spreadsheets');
+
+    
+    Route::post('/lancamentos/import/statements', [ImportController::class, 'importStatements'])
+        ->name('lancamentos.import.statements');
+
+    Route::get('/lancamentos/import/template', [ImportController::class, 'downloadTemplate'])
+        ->name('lancamentos.import.template');
 
     
 

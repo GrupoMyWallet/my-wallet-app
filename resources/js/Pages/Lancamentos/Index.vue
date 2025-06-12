@@ -233,7 +233,7 @@ const deleteItem = () => {
                     Novo Lançamento
                 </Link>
 
-                <Link :href="route('lancamentos.create')" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-green-600 text-white font-semibold shadow-md hover:bg-green-700 transition">
+                <Link :href="route('lancamentos.import')" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-green-600 text-white font-semibold shadow-md hover:bg-green-700 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16h16M4 4l16 16" />
                     </svg>
@@ -375,32 +375,21 @@ const deleteItem = () => {
 
         <Modal :show="showModalDelete" @close="() => closeModal('delete')">
             <template #default>
-                <div class="flex flex-col items-center px-4 py-6">
-                    <div class="bg-red-100 rounded-full p-3 mb-4">
-                        <svg class="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">
-                        Confirmar exclusão
-                    </h3>
-                    <p class="text-gray-600 text-center mb-6">
-                        Tem certeza que deseja excluir
-                        <span class="font-semibold text-red-700">{{ form.item?.descricao || 'este item' }}</span>?
-                        <br>
-                        Essa ação não poderá ser desfeita.
+                <div class="p-6">
+                    <h3 class="text-lg font-bold mb-4 text-red-600">Confirmar Exclusão</h3>
+                    <p class="mb-6">
+                        Tem certeza que deseja excluir 
+                        <strong>"{{ form.item?.descricao || 'este item' }}"</strong>?
+                        Esta ação não pode ser desfeita.
                     </p>
-                    <div class="flex gap-4 mt-2">
-                        <button
-                            class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition"
-                            @click="deleteItem">
-                            Excluir
-                        </button>
-                        <button
-                            class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg font-semibold shadow transition"
-                            @click="() => closeModal('delete')">
+                    <div class="flex justify-end gap-3">
+                        <button type="button" @click="() => closeModal('delete')"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
                             Cancelar
+                        </button>
+                        <button @click="deleteItem" 
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                            Excluir Lançamento
                         </button>
                     </div>
                 </div>

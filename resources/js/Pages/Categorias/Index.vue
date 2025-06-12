@@ -127,7 +127,7 @@ function fecharModais() {
         <div class="max-w-4xl mx-auto py-8 px-4 grid md:grid-cols-3 gap-10">
 
             <!-- Listagem de categorias -->
-            <div class="bg-white rounded-xl shadow p-4 space-y-4 md:col-span-2">
+            <div class="bg-white rounded-xl shadow p-6 space-y-4 md:col-span-2">
 
                 <!-- Header com ordenação -->
                 <div class="flex justify-between items-center">
