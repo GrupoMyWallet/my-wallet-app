@@ -27,7 +27,7 @@ class OrcamentoRepository
 
     public function create(array $data): Orcamento
     {
-        
+
         if ($data['tipo'] === 'anual') {
             $data['mes'] = null;
         }

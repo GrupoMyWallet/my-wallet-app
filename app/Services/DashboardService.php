@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Repositories\DashboardRepository;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
 
 class DashboardService
 {
@@ -50,10 +49,10 @@ class DashboardService
 
     private function getResumoMensal(int $userId, ?int $ano = null, ?int $mes = null, ?int $categoriaId = null): array
     {
-        
+
         $ano = $ano ?? now()->year;
         $mes = $mes ?? now()->month;
-        
+
         $filters = [
             'data_inicio' => Carbon::create($ano, $mes)->startOfMonth(),
             'data_fim' => Carbon::create($ano, $mes)->endOfMonth(),
@@ -87,7 +86,7 @@ class DashboardService
 
         $dadosPorMes = collect(range(1, 12))->map(function ($mes) use ($lancamentos) {
             $lancamentosMes = $lancamentos->where('mes', $mes);
-            
+
             return [
                 'mes' => $mes,
                 'nome_mes' => Carbon::create(null, $mes)->locale('pt_BR')->shortMonthName,
@@ -106,12 +105,12 @@ class DashboardService
     private function getGraficoOrcamentoCategoria(int $userId, int $ano, ?int $mes = null, ?int $categoriaId = null): array
     {
         $orcamentos = $this->repository->getOrcamentos($userId, $ano, $mes, $categoriaId);
-        
+
         $filters = [
-            'data_inicio' => $mes 
+            'data_inicio' => $mes
                 ? Carbon::create($ano, $mes)->startOfMonth()
                 : Carbon::create($ano)->startOfYear(),
-            'data_fim' => $mes 
+            'data_fim' => $mes
                 ? Carbon::create($ano, $mes)->endOfMonth()
                 : Carbon::create($ano)->endOfYear(),
             'categoria_id' => $categoriaId,

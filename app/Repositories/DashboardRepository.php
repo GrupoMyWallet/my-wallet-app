@@ -2,12 +2,11 @@
 
 namespace App\Repositories;
 
-use App\Models\Lancamento;
 use App\Models\Categoria;
+use App\Models\Lancamento;
 use App\Models\Orcamento;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Database\Eloquent\Builder;
 
 class DashboardRepository
 {
@@ -19,7 +18,7 @@ class DashboardRepository
         $lancamentos = Lancamento::where('user_id', $userId)
             ->where('esta_ativa', true)
             ->with('categoria')
-            ->when($filters['categoria_id'] ?? null, fn($q, $categoriaId) => $q->where('categoria_id', $categoriaId))
+            ->when($filters['categoria_id'] ?? null, fn ($q, $categoriaId) => $q->where('categoria_id', $categoriaId))
             ->get();
 
         return $this->expandirLancamentosRecorrentes($lancamentos, $dataInicio, $dataFim);
@@ -32,13 +31,13 @@ class DashboardRepository
             ->when($mes, function ($query, $mes) {
                 return $query->where(function ($q) use ($mes) {
                     $q->where('tipo', 'anual')
-                      ->orWhere('tipo', 'mensal_padrao')
-                      ->orWhere(function ($subQ) use ($mes) {
-                          $subQ->where('tipo', 'mensal_excecao')->where('mes', $mes);
-                      });
+                        ->orWhere('tipo', 'mensal_padrao')
+                        ->orWhere(function ($subQ) use ($mes) {
+                            $subQ->where('tipo', 'mensal_excecao')->where('mes', $mes);
+                        });
                 });
             })
-            ->when($categoriaId, fn($q, $id) => $q->where('categoria_id', $id))
+            ->when($categoriaId, fn ($q, $id) => $q->where('categoria_id', $id))
             ->with('categoria')
             ->get();
     }
@@ -46,9 +45,9 @@ class DashboardRepository
     public function getCategorias(int $userId, ?string $tipo = null): Collection
     {
         return Categoria::where(function ($query) use ($userId) {
-                $query->where('user_id', $userId)->orWhereNull('user_id');
-            })
-            ->when($tipo, fn($q, $tipo) => $q->where('tipo', $tipo))
+            $query->where('user_id', $userId)->orWhereNull('user_id');
+        })
+            ->when($tipo, fn ($q, $tipo) => $q->where('tipo', $tipo))
             ->orderBy('nome')
             ->get();
     }
@@ -59,22 +58,23 @@ class DashboardRepository
 
         foreach ($lancamentos as $lancamento) {
             $dataLancamento = Carbon::parse($lancamento->data);
-            
+
             // Lançamento único
             if ($lancamento->intervalo_meses == 0) {
                 if ($dataLancamento->between($dataInicio, $dataFim)) {
                     $lancamentosExpandidos->push($this->criarLancamentoExpandido($lancamento, $dataLancamento));
                 }
+
                 continue;
             }
 
             // Lançamentos recorrentes
-            $fimRecorrencia = $lancamento->fim_da_recorrencia 
-                ? Carbon::parse($lancamento->fim_da_recorrencia) 
+            $fimRecorrencia = $lancamento->fim_da_recorrencia
+                ? Carbon::parse($lancamento->fim_da_recorrencia)
                 : $dataFim;
 
             $dataAtual = $dataLancamento->copy();
-            
+
             while ($dataAtual <= $fimRecorrencia && $dataAtual <= $dataFim) {
                 if ($dataAtual >= $dataInicio) {
                     $lancamentosExpandidos->push($this->criarLancamentoExpandido($lancamento, $dataAtual->copy()));

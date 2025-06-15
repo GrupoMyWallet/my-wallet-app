@@ -23,45 +23,46 @@ class OrcamentoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            
+
             'categoria_id' => [
                 'required',
-                Rule::exists('categorias', 'id')->where(fn($q) => $q->where('tipo', 'despesa')),
+                Rule::exists('categorias', 'id')->where(fn ($q) => $q->where('tipo', 'despesa')),
             ],
-            'tipo'         => 'required|in:anual,mensal',
-            'ano'          => 'required|integer|min:2000|max:2100',
-            'valor'        => 'required|numeric|min:0',
+            'tipo' => 'required|in:anual,mensal',
+            'ano' => 'required|integer|min:2000|max:2100',
+            'valor' => 'required|numeric|min:0',
         ];
     }
 
     public function messages()
     {
         return [
-        
-            'categoria_id.required'    => 'Categoria obrigatória.',
-            'categoria_id.exists'      => 'A categoria selecionada não existe ou não é do tipo "despesa".',
 
-            'tipo.required'            => 'O tipo de orçamento é obrigatório.',
-            'tipo.in'                  => 'Tipo de orçamento inválido. Escolha entre anual ou mensal',
+            'categoria_id.required' => 'Categoria obrigatória.',
+            'categoria_id.exists' => 'A categoria selecionada não existe ou não é do tipo "despesa".',
 
-            'ano.required'             => 'Ano obrigatório.',
-            'ano.integer'              => 'Ano inválido.',
-            'ano.min'                  => 'Ano deve ser maior ou igual a 2000.',
-            'ano.max'                  => 'Ano deve ser menor ou igual a 2100.',
+            'tipo.required' => 'O tipo de orçamento é obrigatório.',
+            'tipo.in' => 'Tipo de orçamento inválido. Escolha entre anual ou mensal',
 
-            'mes.required_if'          => 'O mês é obrigatório para exceções mensais.',
-            'mes.integer'              => 'Mês inválido.',
-            'mes.min'                  => 'O mês deve ser entre 1 e 12.',
-            'mes.max'                  => 'O mês deve ser entre 1 e 12.',
+            'ano.required' => 'Ano obrigatório.',
+            'ano.integer' => 'Ano inválido.',
+            'ano.min' => 'Ano deve ser maior ou igual a 2000.',
+            'ano.max' => 'Ano deve ser menor ou igual a 2100.',
 
-            'valor.required'           => 'Valor do orçamento obrigatório.',
-            'valor.numeric'            => 'Valor do orçamento deve ser um número.',
-            'valor.min'                => 'O valor do orçamento não pode ser negativo.',
+            'mes.required_if' => 'O mês é obrigatório para exceções mensais.',
+            'mes.integer' => 'Mês inválido.',
+            'mes.min' => 'O mês deve ser entre 1 e 12.',
+            'mes.max' => 'O mês deve ser entre 1 e 12.',
+
+            'valor.required' => 'Valor do orçamento obrigatório.',
+            'valor.numeric' => 'Valor do orçamento deve ser um número.',
+            'valor.min' => 'O valor do orçamento não pode ser negativo.',
         ];
     }
+
     protected function prepareForValidation()
     {
-        
+
         if ($this->tipo === 'anual') {
             $this->merge(['mes' => null]);
         }

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OrcamentoRequest;
 use App\Models\Categoria;
-use App\Repositories\OrcamentoRepository;
 use App\Repositories\CategoriaRepository;
+use App\Repositories\OrcamentoRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -19,10 +19,10 @@ class OrcamentoController extends Controller
     public function index(Request $request)
     {
         $filtros = $request->only(['categoria_id', 'tipo', 'ano', 'mes']);
-        
+
         $orcamentos = $this->orcamentoRepository->paginate($filtros);
         $categorias = $this->categoriaRepository->getCategoriasDespesas();
-        
+
         $categoriaSelecionada = null;
         if ($request->categoria_id) {
             $categoriaSelecionada = $this->categoriaRepository->findOrFail($request->categoria_id);
@@ -32,15 +32,14 @@ class OrcamentoController extends Controller
             'orcamentos' => $orcamentos,
             'categorias' => $categorias,
             'filtros' => $filtros,
-            'categoria_selecionada' => $categoriaSelecionada
+            'categoria_selecionada' => $categoriaSelecionada,
         ]);
     }
 
     public function store(OrcamentoRequest $request)
     {
         $data = $request->validated();
-        
-        
+
         if ($this->orcamentoRepository->existeOrcamento(
             $data['categoria_id'],
             $data['tipo'],
@@ -48,7 +47,7 @@ class OrcamentoController extends Controller
             $data['mes'] ?? null
         )) {
             return back()->withErrors([
-                'geral' => 'Já existe um orçamento para esta categoria e período.'
+                'geral' => 'Já existe um orçamento para esta categoria e período.',
             ]);
         }
 
@@ -63,13 +62,13 @@ class OrcamentoController extends Controller
     public function update(OrcamentoRequest $request, int $id)
     {
         $orcamento = $this->orcamentoRepository->findById($id);
-        
-        if (!$orcamento) {
+
+        if (! $orcamento) {
             return back()->withErrors(['geral' => 'Orçamento não encontrado.']);
         }
 
         $data = $request->validated();
-        
+
         // Verificar se já existe outro orçamento para esta categoria/tipo/período
         if ($this->orcamentoRepository->existeOrcamento(
             $data['categoria_id'],
@@ -83,7 +82,7 @@ class OrcamentoController extends Controller
             $orcamento->mes != ($data['mes'] ?? null)
         )) {
             return back()->withErrors([
-                'geral' => 'Já existe um orçamento para esta categoria e período.'
+                'geral' => 'Já existe um orçamento para esta categoria e período.',
             ]);
         }
 
@@ -96,8 +95,8 @@ class OrcamentoController extends Controller
     public function destroy(int $id)
     {
         $orcamento = $this->orcamentoRepository->findById($id);
-        
-        if (!$orcamento) {
+
+        if (! $orcamento) {
             return back()->withErrors(['geral' => 'Orçamento não encontrado.']);
         }
 

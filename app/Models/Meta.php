@@ -7,19 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class Meta extends Model
 {
     /**
-    * The table associated with the model.
-    *
-    * @var string
-    */
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'metas';
 
     /**
-    * The attributes that are mass assignable.
-    *
-    * @var array<int, string>
-    */
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
-        'user_id', 'titulo', 'descricao', 'valor_a_alcancar', 'valor_atual', 'data_final', 'status'
+        'user_id', 'titulo', 'descricao', 'valor_a_alcancar', 'valor_atual', 'data_final', 'status',
     ];
 
     public function user()

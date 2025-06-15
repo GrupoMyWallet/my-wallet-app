@@ -7,19 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class Categoria extends Model
 {
     /**
-    * The table associated with the model.
-    *
-    * @var string
-    */
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'categorias';
 
     /**
-    * The attributes that are mass assignable.
-    *
-    * @var array<int, string>
-    */
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
-        'user_id', 'nome', 'tipo'
+        'user_id', 'nome', 'tipo',
     ];
 
     public function lancamentos()

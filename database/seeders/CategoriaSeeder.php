@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -60,28 +59,28 @@ class CategoriaSeeder extends Seeder
 
             // CATEGORIAS DE DESPESA
             [
-                                'nome' => 'Moradia',
+                'nome' => 'Moradia',
                 'tipo' => 'despesa',
                 'user_id' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                                'nome' => 'Alimentação',
+                'nome' => 'Alimentação',
                 'tipo' => 'despesa',
                 'user_id' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                                'nome' => 'Transporte',
+                'nome' => 'Transporte',
                 'tipo' => 'despesa',
                 'user_id' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Saúde',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -89,7 +88,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Educação',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -97,7 +96,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Entretenimento',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -105,7 +104,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Roupas e Acessórios',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -113,7 +112,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Eletrônicos',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -121,7 +120,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Casa e Decoração',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -129,7 +128,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Beleza e Cuidados',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -137,7 +136,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Pets',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -145,7 +144,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Impostos e Taxas',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -153,7 +152,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Seguros',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -161,7 +160,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Doações',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -169,7 +168,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Viagens',
                 'tipo' => 'despesa',
                 'user_id' => null,
@@ -177,7 +176,7 @@ class CategoriaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                
+
                 'nome' => 'Outros Gastos',
                 'tipo' => 'despesa',
                 'user_id' => null,

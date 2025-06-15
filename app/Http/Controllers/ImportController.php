@@ -18,7 +18,7 @@ class ImportController extends Controller
                 ['label' => 'Dashboard', 'url' => route('dashboard')],
                 ['label' => 'Lançamentos', 'url' => route('lancamentos.index')],
                 ['label' => 'Importar', 'url' => null],
-            ]
+            ],
         ]);
     }
 
@@ -71,8 +71,7 @@ class ImportController extends Controller
             'Content-Disposition' => 'attachment; filename="template_lancamentos.csv"',
         ];
 
-        $template = "Data,Descrição,Valor,Categoria,Observações";
-        
+        $template = 'Data,Descrição,Valor,Categoria,Observações';
 
         return response($template, 200, $headers);
     }

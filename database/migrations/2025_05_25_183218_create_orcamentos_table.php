@@ -20,12 +20,13 @@ return new class extends Migration
             $table->tinyInteger('mes')->nullable(); // 1-12, null para orçamentos anuais
             $table->decimal('valor', 10, 2);
             $table->timestamps();
-            
+
             // Índices para performance
             $table->index(['categoria_id', 'tipo', 'ano', 'mes']);
             $table->unique(['categoria_id', 'tipo', 'ano', 'mes'], 'unique_orcamento');
         });
     }
+
     /**
      * Reverse the migrations.
      */

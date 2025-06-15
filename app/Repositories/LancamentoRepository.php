@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Repositories;
 
@@ -6,7 +6,6 @@ use App\Models\Lancamento;
 use Carbon\Carbon;
 
 class LancamentoRepository
-
 {
     protected $model;
 
@@ -20,24 +19,24 @@ class LancamentoRepository
         return $this->model::with('categoria:id,nome')->where('user_id', $userId)->get();
     }
 
-    public function paginateLancamentosDoUsuarioComCategoria(array $filtros = [], $userId, int $paginas = 10)
-    {   
+    public function paginateLancamentosDoUsuarioComCategoria(array $filtros, $userId, int $paginas = 10)
+    {
         $query = $this->model::with('categoria:id,nome')
-        ->where('user_id', $userId);
+            ->where('user_id', $userId);
 
-        if (!empty($filtros['categoria_id'])) {
+        if (! empty($filtros['categoria_id'])) {
             $query->where('categoria_id', $filtros['categoria_id']);
         }
 
-        if (!empty($filtros['tipo'])) {
+        if (! empty($filtros['tipo'])) {
             $query->where('tipo', $filtros['tipo']);
         }
 
-        if (!empty($filtros['ano'])) {
+        if (! empty($filtros['ano'])) {
             $query->whereYear('data', $filtros['ano']);
         }
 
-        if (!empty($filtros['mes'])) {
+        if (! empty($filtros['mes'])) {
             $query->whereMonth('data', $filtros['mes']);
         }
 
@@ -48,45 +47,43 @@ class LancamentoRepository
     public function getLancamentosDoUsuarioPorTipo(int $userId, string $tipo)
     {
         return $this->model->where('user_id', $userId)
-                          ->where('tipo', $tipo)
-                          ->where('esta_ativa', true)
-                          ->get();
+            ->where('tipo', $tipo)
+            ->where('esta_ativa', true)
+            ->get();
     }
 
     public function getLancamentosValidosPorMes(int $userId, int $month, int $year)
     {
         $targetDate = Carbon::create($year, $month, 1);
-        
-        return $this->model->where('user_id', $userId)
-                          ->where('esta_ativa', true)
-                          ->where(function($query) use ($targetDate, $month, $year) {
-                              
-                              $query->where(function($q) use ($month, $year) {
-                                  $q->where('tipo_recorrencia', 'unica')
-                                    ->whereMonth('data', $month)
-                                    ->whereYear('data', $year);
-                              })
-                              
-                              ->orWhere(function($q) use ($targetDate) {
-                                  $q->whereIn('tipo_recorrencia', ['mensal', 'anual'])
-                                    ->where('data', '<=', $targetDate)
-                                    ->where(function($subQ) use ($targetDate) {
-                                        $subQ->whereNull('fim_da_recorrencia')
-                                             ->orWhere('fim_da_recorrencia', '>=', $targetDate);
-                                    });
-                              });
-                          })
-                          ->get();
-    }
 
+        return $this->model->where('user_id', $userId)
+            ->where('esta_ativa', true)
+            ->where(function ($query) use ($targetDate, $month, $year) {
+
+                $query->where(function ($q) use ($month, $year) {
+                    $q->where('tipo_recorrencia', 'unica')
+                        ->whereMonth('data', $month)
+                        ->whereYear('data', $year);
+                })
+                    ->orWhere(function ($q) use ($targetDate) {
+                        $q->whereIn('tipo_recorrencia', ['mensal', 'anual'])
+                            ->where('data', '<=', $targetDate)
+                            ->where(function ($subQ) use ($targetDate) {
+                                $subQ->whereNull('fim_da_recorrencia')
+                                    ->orWhere('fim_da_recorrencia', '>=', $targetDate);
+                            });
+                    });
+            })
+            ->get();
+    }
 
     public function getCategoriasComOrçamento(int $userId)
     {
         return Categoria::with('orcamento')
-                        ->where('user_id', $userId)
-                        ->orWhereNull('user_id')
-                        ->orderBy('nome')
-                        ->get();
+            ->where('user_id', $userId)
+            ->orWhereNull('user_id')
+            ->orderBy('nome')
+            ->get();
     }
 
     public function create(array $data)
@@ -103,6 +100,7 @@ class LancamentoRepository
     {
         $lancamento = $this->model->findOrFail($id);
         $lancamento->update($data);
+
         return $lancamento;
     }
 
@@ -115,12 +113,12 @@ class LancamentoRepository
     {
         return Lancamento::where('user_id', $userId)
             ->where('esta_ativa', true)
-            ->where(function($query) use ($dataInicio, $dataFim) {
+            ->where(function ($query) use ($dataInicio, $dataFim) {
                 $query->where('data', '<=', $dataFim)
-                      ->where(function($q) use ($dataInicio) {
-                          $q->whereNull('fim_da_recorrencia')
+                    ->where(function ($q) use ($dataInicio) {
+                        $q->whereNull('fim_da_recorrencia')
                             ->orWhere('fim_da_recorrencia', '>=', $dataInicio);
-                      });
+                    });
             })
             ->with('categoria')
             ->get();
@@ -138,6 +136,7 @@ class LancamentoRepository
 
         return $this->getLancamentosAtivos($userId, $dataInicio, $dataFim);
     }
+
     public function getByPeriodo(Carbon $inicio, Carbon $fim): Collection
     {
         return Lancamento::whereBetween('data', [$inicio, $fim])
@@ -167,8 +166,8 @@ class LancamentoRepository
                 return [
                     'receitas' => $items->where('tipo', 'receita')->first()->total ?? 0,
                     'despesas' => $items->where('tipo', 'despesa')->first()->total ?? 0,
-                    'saldo' => ($items->where('tipo', 'receita')->first()->total ?? 0) - 
-                              ($items->where('tipo', 'despesa')->first()->total ?? 0)
+                    'saldo' => ($items->where('tipo', 'receita')->first()->total ?? 0) -
+                              ($items->where('tipo', 'despesa')->first()->total ?? 0),
                 ];
             });
     }
@@ -198,15 +197,14 @@ class LancamentoRepository
             ->get();
     }
 
-
     public function getAnosDisponiveis(): array
     {
         $anos = Lancamento::selectRaw('DISTINCT YEAR(data) as ano')
             ->orderBy('ano', 'desc')
             ->pluck('ano')
             ->toArray();
-            
-        return !empty($anos) ? $anos : [now()->year];
+
+        return ! empty($anos) ? $anos : [now()->year];
     }
 
     public function getLancamentosRecorrentes(Carbon $inicio, Carbon $fim): Collection
@@ -219,6 +217,4 @@ class LancamentoRepository
             })
             ->get();
     }
-
-    
 }

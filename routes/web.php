@@ -1,14 +1,14 @@
 <?php
 
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImportController;
+use App\Http\Controllers\LancamentoController;
+use App\Http\Controllers\MetaController;
+use App\Http\Controllers\OrcamentoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\LancamentoController;
-use App\Http\Controllers\OrcamentoController;
-use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\MetaController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ImportController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -24,7 +24,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [DashboardController::class, 'getData'])->name('dashboard.data');
 
@@ -33,7 +33,7 @@ Route::middleware([
         Route::get('/lancamentos/create', 'create')->name('lancamentos.create');
         Route::post('/lancamentos', 'store')->name('lancamentos.store');
         Route::put('/lancamentos/{id}', 'update')->name('lancamentos.update');
-        Route::delete('/lancamentos/{id}', 'destroy')->name('lancamentos.destroy');  
+        Route::delete('/lancamentos/{id}', 'destroy')->name('lancamentos.destroy');
     });
 
     Route::controller(CategoriaController::class)->group(function () {
@@ -41,7 +41,7 @@ Route::middleware([
         Route::post('/categorias', 'store')->name('categorias.store');
         Route::get('/categorias/{id}', 'show');
         Route::put('/categorias/{id}', 'update');
-        Route::delete('/categorias/{id}', 'destroy'); 
+        Route::delete('/categorias/{id}', 'destroy');
     });
 
     Route::controller(MetaController::class)->group(function () {
@@ -49,30 +49,26 @@ Route::middleware([
         Route::post('/metas', 'store')->name('metas.store');
         Route::get('/metas/{id}', 'show');
         Route::put('/metas/{id}', 'update');
-        Route::delete('/metas/{id}', 'destroy'); 
+        Route::delete('/metas/{id}', 'destroy');
     });
 
     Route::controller(OrcamentoController::class)->group(function () {
         Route::get('/orcamentos', 'index')->name('orcamentos.index');
         Route::post('/orcamentos', 'store')->name('orcamentos.store');
         Route::put('/orcamentos/{id}', 'update')->name('orcamentos.update');
-        Route::delete('/orcamentos/{id}', 'destroy')->name('orcamentos.destroy'); 
+        Route::delete('/orcamentos/{id}', 'destroy')->name('orcamentos.destroy');
     });
 
     Route::get('/lancamentos/import', [ImportController::class, 'index'])
         ->name('lancamentos.import');
 
-    
     Route::post('/lancamentos/import/spreadsheets', [ImportController::class, 'importSpreadsheets'])
         ->name('lancamentos.import.spreadsheets');
 
-    
     Route::post('/lancamentos/import/statements', [ImportController::class, 'importStatements'])
         ->name('lancamentos.import.statements');
 
     Route::get('/lancamentos/import/template', [ImportController::class, 'downloadTemplate'])
         ->name('lancamentos.import.template');
-
-    
 
 });

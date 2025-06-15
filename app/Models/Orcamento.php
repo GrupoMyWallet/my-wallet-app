@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Orcamento extends Model
 {
-        /**
+    /**
      * The table associated with the model.
      *
      * @var string
@@ -14,12 +14,12 @@ class Orcamento extends Model
     protected $table = 'orcamentos';
 
     /**
-    * The attributes that are mass assignable.
-    *
-    * @var array<int, string>
-    */
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
-        'user_id','tipo', 'categoria_id', 'ano', 'mes', 'valor'
+        'user_id', 'tipo', 'categoria_id', 'ano', 'mes', 'valor',
     ];
 
     protected $casts = [
@@ -28,7 +28,7 @@ class Orcamento extends Model
 
     protected $appends = [
         'mes_formatado',
-        'periodo_formatado'
+        'periodo_formatado',
     ];
 
     public function categoria()
@@ -43,7 +43,7 @@ class Orcamento extends Model
 
     public function getMesFormatadoAttribute(): ?string
     {
-        if (!$this->mes) {
+        if (! $this->mes) {
             return null;
         }
 
@@ -51,7 +51,7 @@ class Orcamento extends Model
             1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março',
             4 => 'Abril', 5 => 'Maio', 6 => 'Junho',
             7 => 'Julho', 8 => 'Agosto', 9 => 'Setembro',
-            10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro'
+            10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro',
         ];
 
         return $meses[$this->mes] ?? null;
@@ -63,7 +63,7 @@ class Orcamento extends Model
             return (string) $this->ano;
         }
 
-        return $this->mes_formatado . '/' . $this->ano;
+        return $this->mes_formatado.'/'.$this->ano;
     }
 
     public function scopeByCategoria($query, $categoriaId)
@@ -71,6 +71,7 @@ class Orcamento extends Model
         if ($categoriaId) {
             return $query->where('categoria_id', $categoriaId);
         }
+
         return $query;
     }
 
@@ -79,6 +80,7 @@ class Orcamento extends Model
         if ($tipo) {
             return $query->where('tipo', $tipo);
         }
+
         return $query;
     }
 
@@ -87,6 +89,7 @@ class Orcamento extends Model
         if ($ano) {
             return $query->where('ano', $ano);
         }
+
         return $query;
     }
 
@@ -95,7 +98,7 @@ class Orcamento extends Model
         if ($mes) {
             return $query->where('mes', $mes);
         }
+
         return $query;
     }
-    
 }

@@ -1,26 +1,25 @@
-<?php 
+<?php
 
 namespace App\Repositories;
 
 use App\Models\Meta;
 
 class MetaRepository
-{   
+{
     protected $model;
 
     public function __construct(Meta $meta)
     {
         $this->model = $meta;
     }
-    
+
     public function getCategoriaDoUsuario($userId)
     {
         return $this->model::where(function ($query) use ($userId) {
             $query->where('user_id', $userId)
-            ->orWhereNull('user_id');      
+                ->orWhereNull('user_id');
         })->get();
     }
-
 
     public function findOrFail($id)
     {
@@ -31,6 +30,7 @@ class MetaRepository
     {
         $categoria = $this->model->findOrFail($id);
         $categoria->update($data);
+
         return $categoria;
     }
 

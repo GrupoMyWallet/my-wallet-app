@@ -2,9 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use App\Models\Lancamento;
+use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateLancamentoRequest extends FormRequest
 {
@@ -23,9 +22,9 @@ class UpdateLancamentoRequest extends FormRequest
      */
     public function rules(): array
     {
-        
+
         return Lancamento::rules();
-        
+
     }
 
     /**

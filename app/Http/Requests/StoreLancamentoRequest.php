@@ -2,9 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use App\Models\Lancamento;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreLancamentoRequest extends FormRequest
 {
@@ -23,12 +22,13 @@ class StoreLancamentoRequest extends FormRequest
      */
     public function rules(): array
     {
-        
+
         $base = Lancamento::rules();
         $rules = ['lancamentos' => 'required|array|min:1'];
         foreach ($base as $campo => $regra) {
             $rules["lancamentos.*.$campo"] = $regra;
         }
+
         return $rules;
     }
 
@@ -41,7 +41,7 @@ class StoreLancamentoRequest extends FormRequest
     {
         $base = Lancamento::messages();
         $messages = [];
-    
+
         foreach ($base as $rule => $msg) {
             if (strpos($rule, 'lancamentos.') === 0) {
                 $messages[$rule] = $msg;
@@ -49,10 +49,10 @@ class StoreLancamentoRequest extends FormRequest
                 $messages["lancamentos.*.$rule"] = $msg;
             }
         }
-    
+
         $messages['lancamentos.required'] = 'Adicione pelo menos um lançamento.';
         $messages['lancamentos.array'] = 'Os lançamentos devem ser enviados em formato de lista.';
-    
+
         return $messages;
     }
 }
