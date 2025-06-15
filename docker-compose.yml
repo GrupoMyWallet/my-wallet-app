@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Serviço da Aplicação mywallet (PHP-FPM)
   app:
     build:
       context: .
@@ -10,15 +9,19 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     volumes:
-      # Volume para persistir dados gerados pela aplicação (ex: uploads de usuários)
       - app-storage-data:/var/www/storage/app
-      - ./.env:/var/www/.env 
+      - app-bootstrap-cache:/var/www/bootstrap/cache
+      - ./.env:/var/www/.env:ro
     depends_on:
       - postgres
     networks:
       - mywallet
+    healthcheck:
+      test: ["CMD", "php", "artisan", "tinker", "--execute=echo 'OK';"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Serviço do Nginx (Reverse Proxy)
   nginx:
     image: nginx:alpine
     container_name: mywallet_nginx
@@ -27,20 +30,22 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      # Nginx lê os arquivos do diretório do projeto no host.
-      # Isso significa que o processo de deploy precisará garantir que os arquivos no host estejam atualizados.
-      - .:/var/www
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-      # MUDE ESTAS LINHAS - usar certificados do host:
+      - .:/var/www:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - ./certbot/www:/var/www/certbot
-      - ./nginx/html:/var/www/html
+      - ./certbot/www:/var/www/certbot:ro
+      - nginx-logs:/var/log/nginx
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     networks:
       - mywallet
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Adicione este serviço para Certbot (gerenciamento de SSL)
   certbot:
     image: certbot/certbot
     container_name: mywallet_certbot
@@ -54,7 +59,6 @@ services:
     networks:
       - mywallet
 
-  # Serviço do Banco de Dados PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: mywallet_postgres
@@ -64,9 +68,14 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - postgres-data:/var/lib/postgresql/data # Volume persistente para os dados do DB
+      - postgres-data:/var/lib/postgresql/data
     networks:
       - mywallet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   mywallet:
@@ -75,5 +84,9 @@ networks:
 volumes:
   postgres-data:
     driver: local
-  app-storage-data: # Novo volume nomeado para persistência de dados da aplicação (ex: uploads)
+  app-storage-data:
+    driver: local
+  app-bootstrap-cache:
+    driver: local
+  nginx-logs:
     driver: local

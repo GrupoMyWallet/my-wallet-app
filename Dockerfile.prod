@@ -1,113 +1,64 @@
 # --- Estágio 1: Dependências do PHP com Composer ---
-# Usa a imagem oficial do Composer para instalar as dependências
-FROM composer:2 as vendor
+      FROM composer:2 as vendor
 
-WORKDIR /app
-
-# Copia apenas os arquivos necessários para o Composer
-COPY composer.json composer.json
-COPY composer.lock composer.lock
-
-# Instala as dependências do Composer, sem dev, otimizando o autoloader
-RUN composer install --no-interaction --no-plugins --no-scripts --no-dev --prefer-dist --optimize-autoloader
-
-# --- Estágio 2: Compilação dos Assets com Node.js ---
-# Usa uma imagem Node.js leve (alpine) para compilar os assets
-FROM node:20-alpine as node_assets
-
-WORKDIR /app
-
-# Copia os arquivos de configuração do frontend e os recursos
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-COPY vite.config.js vite.config.js
-COPY tailwind.config.js tailwind.config.js
-COPY postcss.config.js postcss.config.js
-COPY resources/ resources/
-
-# Copia a pasta vendor do estágio anterior para que o Ziggy (ou outras libs PHP) seja encontrado
-# Isso é crucial para o build do frontend que depende de algo do backend (ex: rotas do Ziggy)
-COPY --from=vendor /app/vendor/ /app/vendor/
-
-# Instala as dependências do Node.js e compila os assets para produção
-RUN npm install
-RUN npm run build
-
-# --- Estágio 3: Imagem Final de Produção (PHP-FPM) ---
-# Usa uma imagem PHP-FPM leve (alpine) para a aplicação final
-FROM php:8.2-fpm-alpine
-
-WORKDIR /var/www
-
-# Instala extensões PHP comuns para Laravel e dependências do sistema
-# Adicionado 'gd' com suporte a freetype e jpeg, 'pdo_pgsql' para PostgreSQL, etc.
-RUN apk add --no-cache \
-      # Dependências de COMPILAÇÃO (serão removidas depois)
-      libpng-dev \
-      libzip-dev \
-      jpeg-dev \
-      freetype-dev \
-      postgresql-dev \
-      oniguruma-dev \
-      libxml2-dev \
-      libjpeg-turbo-dev \
-      libwebp-dev \
-      gmp-dev \
-      # Dependências de RUNTIME (PRECISAM PERMANECER)
-      libpng \
-      libzip \
-      libpq \
-      libjpeg \
-      freetype \
-      # Outros pacotes necessários
-      supervisor \
-      # Adicione outras bibliotecas de runtime se faltar alguma
-      # Ex: se precisar de curl, adicione curl-dev e curl
-      # Ex: se precisar de intl, adicione icu-dev e icu
-      && docker-php-ext-configure gd --with-freetype --with-jpeg \
-      && docker-php-ext-install -j$(nproc) \
-      gd \
-      zip \
-      pdo \
-      pdo_pgsql \
-      exif \
-      bcmath \
-      mbstring \
-      pcntl \
-      soap \
-      xml \
-      # Limpeza de pacotes de desenvolvimento após a instalação das extensões
-      && apk del --no-cache \
-      libpng-dev \
-      libzip-dev \
-      jpeg-dev \
-      freetype-dev \
-      postgresql-dev \
-      oniguruma-dev \
-      libxml2-dev \
-      libjpeg-turbo-dev \
-      libwebp-dev \
-      gmp-dev
-
-# Copia os arquivos da aplicação, excluindo o que não é necessário (via .dockerignore)
-# Garante que os arquivos sejam copiados com o usuário www-data
-COPY --chown=www-data:www-data . /var/www
-
-# Copia as dependências do Composer do estágio 'vendor' para o diretório final
-COPY --from=vendor /app/vendor/ /var/www/vendor/
-
-# Copia os assets compilados do estágio 'node_assets' para o diretório público final
-COPY --from=node_assets /app/public/build /var/www/public/build
-
-# Ajusta permissões para o Laravel
-# Garante que storage e bootstrap/cache sejam graváveis pelo www-data
-# Define permissões mais restritivas para o diretório public
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public
-RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-RUN chmod -R 755 /var/www/public
-
-# Expõe a porta 9000 para o PHP-FPM
-EXPOSE 9000
-
-# Comando para iniciar o PHP-FPM
-CMD ["php-fpm"]
+      WORKDIR /app
+      
+      COPY composer.json composer.lock ./
+      RUN composer install --no-interaction --no-plugins --no-scripts --no-dev --prefer-dist --optimize-autoloader
+      
+      # --- Estágio 2: Compilação dos Assets com Node.js ---
+      FROM node:20-alpine as node_assets
+      
+      WORKDIR /app
+      
+      # Copiar arquivos de configuração
+      COPY package.json package-lock.json vite.config.js tailwind.config.js postcss.config.js ./
+      COPY resources/ resources/
+      
+      # Copiar vendor para dependências PHP (ex: Ziggy)
+      COPY --from=vendor /app/vendor/ /app/vendor/
+      
+      # Build dos assets
+      RUN npm ci --only=production
+      RUN npm run build
+      
+      # Verificar se build foi criado corretamente
+      RUN ls -la /app/public/build/ && cat /app/public/build/manifest.json | head -5
+      
+      # --- Estágio 3: Imagem Final de Produção ---
+      FROM php:8.2-fpm-alpine
+      
+      WORKDIR /var/www
+      
+      # Instalar dependências
+      RUN apk add --no-cache \
+            libpng-dev libzip-dev jpeg-dev freetype-dev postgresql-dev \
+            oniguruma-dev libxml2-dev libjpeg-turbo-dev libwebp-dev \
+            libpng libzip libpq libjpeg freetype supervisor \
+            && docker-php-ext-configure gd --with-freetype --with-jpeg \
+            && docker-php-ext-install -j$(nproc) \
+            gd zip pdo pdo_pgsql exif bcmath mbstring pcntl soap xml \
+            && apk del --no-cache \
+            libpng-dev libzip-dev jpeg-dev freetype-dev postgresql-dev \
+            oniguruma-dev libxml2-dev libjpeg-turbo-dev libwebp-dev
+      
+      # Copiar aplicação
+      COPY --chown=www-data:www-data . /var/www
+      
+      # Copiar dependências
+      COPY --from=vendor /app/vendor/ /var/www/vendor/
+      
+      # Copiar assets (IMPORTANTE: garantir que sejam copiados corretamente)
+      COPY --from=node_assets /app/public/build /var/www/public/build
+      
+      # Ajustar permissões
+      RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public/build \
+          && chmod -R 775 /var/www/storage /var/www/bootstrap/cache \
+          && chmod -R 755 /var/www/public
+      
+      # Verificar se assets foram copiados
+      RUN ls -la /var/www/public/build/ && echo "Assets copiados com sucesso!"
+      
+      EXPOSE 9000
+      
+      CMD ["php-fpm"]

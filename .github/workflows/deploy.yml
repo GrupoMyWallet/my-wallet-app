@@ -1,0 +1,69 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd /root/my-wallet-app
+          
+          echo "🚀 Iniciando deploy automático..."
+          
+          # Backup do .env atual
+          cp .env .env.backup
+          
+          # Git pull
+          git pull origin main
+          
+          # Restaurar .env
+          cp .env.backup .env
+          
+          # Parar containers
+          docker-compose down
+          
+          # Limpar build antigo
+          rm -rf ./public/build/*
+          
+          # Build da aplicação (sem cache para garantir assets atualizados)
+          docker-compose build --no-cache app
+          
+          # Subir containers
+          docker-compose up -d
+          
+          # Aguardar containers iniciarem
+          sleep 15
+          
+          # Configurar Laravel
+          docker exec mywallet_app php artisan key:generate --force
+          docker exec mywallet_app php artisan config:cache
+          docker exec mywallet_app php artisan route:cache
+          docker exec mywallet_app php artisan view:cache
+          
+          # Executar migrations
+          docker exec mywallet_app php artisan migrate --force
+          
+          # Ajustar permissões
+          docker exec mywallet_app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+          docker exec mywallet_app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+          
+          # Verificar se assets foram gerados corretamente
+          docker exec mywallet_app ls -la /var/www/public/build/
+          
+          # Verificar status
+          docker-compose ps
+          
+          echo "✅ Deploy concluído!"
+          echo "🌐 Site: https://my-wallet.app.br"
