@@ -58,6 +58,7 @@ RUN apk add --no-cache \
       libpng \
       libzip \
       libpq \
+      libjpeg \
       # Outros pacotes necessários
       supervisor \
       # Adicione outras bibliotecas de runtime se faltar alguma
@@ -105,8 +106,6 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/ww
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 RUN chmod -R 755 /var/www/public
 
-# Limpa todos os caches do Laravel para garantir que a aplicação inicie limpa
-RUN php artisan optimize:clear
 
 # Expõe a porta 9000 para o PHP-FPM
 EXPOSE 9000
