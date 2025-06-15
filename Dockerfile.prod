@@ -18,8 +18,10 @@
       # Copiar vendor para dependências PHP (ex: Ziggy)
       COPY --from=vendor /app/vendor/ /app/vendor/
       
+      # CORREÇÃO: Instalar TODAS as dependências (incluindo dev) para o build
+      RUN npm ci
+      
       # Build dos assets
-      RUN npm ci --only=production
       RUN npm run build
       
       # Verificar se build foi criado corretamente
@@ -48,7 +50,7 @@
       # Copiar dependências
       COPY --from=vendor /app/vendor/ /var/www/vendor/
       
-      # Copiar assets (IMPORTANTE: garantir que sejam copiados corretamente)
+      # Copiar assets
       COPY --from=node_assets /app/public/build /var/www/public/build
       
       # Ajustar permissões
