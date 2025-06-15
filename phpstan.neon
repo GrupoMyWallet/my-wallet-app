@@ -1,0 +1,22 @@
+# phpstan.neon
+
+includes:
+    - ./vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - routes/
+        - config/
+
+    # O nível de análise. 0 é o mais baixo, 9 é o mais estrito.
+    # Comece com um nível mais baixo (como 5) e aumente conforme você corrige os erros.
+    level: 5
+
+    # Opcional: ignore erros específicos que você não quer corrigir agora.
+    # ignoreErrors:
+    #     - '#PHPDoc tag @var#'
+
+    # Opcional: exclua arquivos específicos da análise.
+    # excludePaths:
+    #     - ./*/*/FileToBeExcluded.php
