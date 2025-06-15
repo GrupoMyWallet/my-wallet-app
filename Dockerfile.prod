@@ -1,17 +1,24 @@
 # --- Estágio 1: Dependências do PHP com Composer ---
+# Usa a imagem oficial do Composer para instalar as dependências
 FROM composer:2 as vendor
 
 WORKDIR /app
-COPY database/ database/
+
+# Copia apenas os arquivos necessários para o Composer
 COPY composer.json composer.json
 COPY composer.lock composer.lock
+
+# Instala as dependências do Composer, sem dev, otimizando o autoloader
 RUN composer install --no-interaction --no-plugins --no-scripts --no-dev --prefer-dist --optimize-autoloader
 
 
 # --- Estágio 2: Compilação dos Assets com Node.js ---
+# Usa uma imagem Node.js leve (alpine) para compilar os assets
 FROM node:20-alpine as node_assets
 
 WORKDIR /app
+
+# Copia os arquivos de configuração do frontend e os recursos
 COPY package.json package.json
 COPY package-lock.json package-lock.json
 COPY vite.config.js vite.config.js
@@ -19,20 +26,23 @@ COPY tailwind.config.js tailwind.config.js
 COPY postcss.config.js postcss.config.js
 COPY resources/ resources/
 
-# <-- A LINHA MÁGICA VAI AQUI
-# Copia a pasta vendor do estágio anterior para que o Ziggy seja encontrado
+# Copia a pasta vendor do estágio anterior para que o Ziggy (ou outras libs PHP) seja encontrado
+# Isso é crucial para o build do frontend que depende de algo do backend (ex: rotas do Ziggy)
 COPY --from=vendor /app/vendor/ /app/vendor/
 
+# Instala as dependências do Node.js e compila os assets para produção
 RUN npm install
 RUN npm run build
 
-# --- Estágio 3: Imagem Final de Produção ---
-# (Nenhuma mudança necessária aqui)
+
+# --- Estágio 3: Imagem Final de Produção (PHP-FPM) ---
+# Usa uma imagem PHP-FPM leve (alpine) para a aplicação final
 FROM php:8.2-fpm-alpine
-    
+
 WORKDIR /var/www
 
 # Instala extensões PHP comuns para Laravel e dependências do sistema
+# Adicionado 'gd' com suporte a freetype e jpeg, 'pdo_pgsql' para PostgreSQL, etc.
 RUN apk add --no-cache \
       libpng-dev \
       libzip-dev \
@@ -42,8 +52,17 @@ RUN apk add --no-cache \
       oniguruma-dev \
       libxml2-dev \
       supervisor \
+      # Dependências para GD
+      libjpeg-turbo-dev \
+      libwebp-dev \
+      # Dependências para bcmath
+      gmp-dev \
+      # Dependências para soap
+      libxml2-dev \
+      # Dependências para pdo_pgsql
+      postgresql-dev \
       && docker-php-ext-configure gd --with-freetype --with-jpeg \
-      && docker-php-ext-install \
+      && docker-php-ext-install -j$(nproc) \
       gd \
       zip \
       pdo \
@@ -53,23 +72,39 @@ RUN apk add --no-cache \
       mbstring \
       pcntl \
       soap \
-      xml
+      xml \
+      # Limpeza de pacotes de desenvolvimento após a instalação das extensões
+      && apk del --no-cache \
+      libpng-dev \
+      libzip-dev \
+      jpeg-dev \
+      freetype-dev \
+      postgresql-dev \
+      oniguruma-dev \
+      libxml2-dev \
+      libjpeg-turbo-dev \
+      libwebp-dev \
+      gmp-dev
 
-# Copia os arquivos da aplicação
-COPY . .
+# Copia os arquivos da aplicação, excluindo o que não é necessário (via .dockerignore)
+# Garante que os arquivos sejam copiados com o usuário www-data
+COPY --chown=www-data:www-data . /var/www
 
-# Copia as dependências do Composer do estágio 'vendor'
+# Copia as dependências do Composer do estágio 'vendor' para o diretório final
 COPY --from=vendor /app/vendor/ /var/www/vendor/
 
-# Copia os assets compilados do estágio 'node_assets'
+# Copia os assets compilados do estágio 'node_assets' para o diretório público final
 COPY --from=node_assets /app/public/build /var/www/public/build
 
 # Ajusta permissões para o Laravel
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# Garante que storage e bootstrap/cache sejam graváveis pelo www-data
+# Define permissões mais restritivas para o diretório public
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+RUN chmod -R 755 /var/www/public
 
-# Limpa o cache de configuração para garantir que as variáveis de ambiente sejam lidas
-RUN php artisan config:clear && php artisan route:clear && php artisan view:clear
+# Limpa todos os caches do Laravel para garantir que a aplicação inicie limpa
+RUN php artisan optimize:clear
 
 # Expõe a porta 9000 para o PHP-FPM
 EXPOSE 9000

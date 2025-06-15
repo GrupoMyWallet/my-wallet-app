@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Serviço da Aplicação mywallet
+  # Serviço da Aplicação mywallet (PHP-FPM)
   app:
     build:
       context: .
@@ -10,8 +10,8 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     volumes:
-      - ./storage:/var/www/storage
-      - ./bootstrap/cache:/var/www/bootstrap/cache
+      # Volume para persistir dados gerados pela aplicação (ex: uploads de usuários)
+      - app-storage-data:/var/www/storage/app
     depends_on:
       - postgres
     networks:
@@ -26,6 +26,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      # Nginx lê os arquivos do diretório do projeto no host.
+      # Isso significa que o processo de deploy precisará garantir que os arquivos no host estejam atualizados.
       - .:/var/www
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       # MUDE ESTAS LINHAS - usar certificados do host:
@@ -37,7 +39,7 @@ services:
     networks:
       - mywallet
 
-  # Adicione este serviço
+  # Adicione este serviço para Certbot (gerenciamento de SSL)
   certbot:
     image: certbot/certbot
     container_name: mywallet_certbot
@@ -61,8 +63,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-    
+      - postgres-data:/var/lib/postgresql/data # Volume persistente para os dados do DB
     networks:
       - mywallet
 
@@ -72,4 +73,6 @@ networks:
 
 volumes:
   postgres-data:
+    driver: local
+  app-storage-data: # Novo volume nomeado para persistência de dados da aplicação (ex: uploads)
     driver: local
