@@ -5,8 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    image: myapp-php-dev
-    container_name: myapp-php-dev
+    image: mywallet-php-dev
+    container_name: mywallet-php-dev
     working_dir: /var/www
     volumes:
       - ./:/var/www
@@ -20,7 +20,7 @@ services:
 
   nginx:
     image: nginx:latest
-    container_name: myapp-nginx-dev
+    container_name: mywallet-nginx-dev
     ports:
       - "8080:80"
     volumes:
@@ -31,7 +31,7 @@ services:
 
   vite:
     image: node:20
-    container_name: myapp-vite-dev
+    container_name: mywallet-vite-dev
     working_dir: /var/www
     volumes:
       - ./:/var/www
@@ -43,11 +43,11 @@ services:
 
   db:
     image: postgres:15
-    container_name: myapp-postgres-dev
+    container_name: mywallet-postgres-dev
     environment:
-      POSTGRES_DB: myappdb
-      POSTGRES_USER: myappuser
-      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:

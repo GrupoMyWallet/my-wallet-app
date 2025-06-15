@@ -34,14 +34,13 @@ jobs:
           # Parar containers
           docker-compose down
           
-          # Limpar build antigo
-          rm -rf ./public/build/*
-          
           # Build da aplicação (sem cache para garantir assets atualizados)
           docker-compose build --no-cache app
           
           # Subir containers
           docker-compose up -d
+
+          docker exec mywallet_nginx ls -la /var/www/public/build/assets/
           
           # Aguardar containers iniciarem
           sleep 15
