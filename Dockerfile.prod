@@ -34,10 +34,6 @@ COPY --from=vendor /app/vendor/ /app/vendor/
 RUN npm install
 RUN npm run build
 
-RUN npm cache clean --force
-RUN rm -rf node_modules
-
-
 # --- Estágio 3: Imagem Final de Produção (PHP-FPM) ---
 # Usa uma imagem PHP-FPM leve (alpine) para a aplicação final
 FROM php:8.2-fpm-alpine
@@ -47,6 +43,7 @@ WORKDIR /var/www
 # Instala extensões PHP comuns para Laravel e dependências do sistema
 # Adicionado 'gd' com suporte a freetype e jpeg, 'pdo_pgsql' para PostgreSQL, etc.
 RUN apk add --no-cache \
+      # Dependências de COMPILAÇÃO (serão removidas depois)
       libpng-dev \
       libzip-dev \
       jpeg-dev \
@@ -54,16 +51,18 @@ RUN apk add --no-cache \
       postgresql-dev \
       oniguruma-dev \
       libxml2-dev \
-      supervisor \
-      # Dependências para GD
       libjpeg-turbo-dev \
       libwebp-dev \
-      # Dependências para bcmath
       gmp-dev \
-      # Dependências para soap
-      libxml2-dev \
-      # Dependências para pdo_pgsql
-      postgresql-dev \
+      # Dependências de RUNTIME (PRECISAM PERMANECER)
+      libpng16 \
+      libzip \
+      libpq \
+      # Outros pacotes necessários
+      supervisor \
+      # Adicione outras bibliotecas de runtime se faltar alguma
+      # Ex: se precisar de curl, adicione curl-dev e curl
+      # Ex: se precisar de intl, adicione icu-dev e icu
       && docker-php-ext-configure gd --with-freetype --with-jpeg \
       && docker-php-ext-install -j$(nproc) \
       gd \
