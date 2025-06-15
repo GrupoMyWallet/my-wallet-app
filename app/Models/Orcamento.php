@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Orcamento extends Model
 {
@@ -13,11 +14,7 @@ class Orcamento extends Model
      */
     protected $table = 'orcamentos';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    /** @var list<string> */
     protected $fillable = [
         'user_id', 'tipo', 'categoria_id', 'ano', 'mes', 'valor',
     ];
@@ -31,12 +28,12 @@ class Orcamento extends Model
         'periodo_formatado',
     ];
 
-    public function categoria()
+    public function categoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

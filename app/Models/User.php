@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -21,11 +22,7 @@ class User extends Authenticatable
     use Notifiable;
     use TwoFactorAuthenticatable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    /** @var list<string> */
     protected $fillable = [
         'name',
         'email',
@@ -66,22 +63,22 @@ class User extends Authenticatable
         ];
     }
 
-    public function lancamentos()
+    public function lancamentos(): HasMany
     {
         return $this->hasMany(Lancamento::class);
     }
 
-    public function orcamentos()
+    public function orcamentos(): HasMany
     {
         return $this->hasMany(Orcamento::class);
     }
 
-    public function metas()
+    public function metas(): HasMany
     {
         return $this->hasMany(Meta::class);
     }
 
-    public function categorias()
+    public function categorias(): HasMany
     {
         return $this->hasMany(Categoria::class);
     }

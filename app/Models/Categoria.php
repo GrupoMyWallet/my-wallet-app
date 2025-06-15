@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Categoria extends Model
 {
@@ -13,26 +15,22 @@ class Categoria extends Model
      */
     protected $table = 'categorias';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    /** @var list<string> */
     protected $fillable = [
         'user_id', 'nome', 'tipo',
     ];
 
-    public function lancamentos()
+    public function lancamentos(): HasMany
     {
-        return $this->hasOne(Lancamento::class);
+        return $this->hasMany(Lancamento::class);
     }
 
-    public function orcamento()
+    public function orcamento(): HasMany
     {
-        return $this->hasOne(Orcamento::class);
+        return $this->hasMany(Orcamento::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

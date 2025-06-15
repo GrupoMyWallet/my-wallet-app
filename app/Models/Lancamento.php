@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Lancamento extends Model
 {
@@ -13,6 +14,7 @@ class Lancamento extends Model
      */
     protected $table = 'lancamentos';
 
+    /** @var list<string> */
     protected $fillable = [
         'user_id', 'tipo', 'valor', 'descricao', 'categoria_id', 'data',
         'intervalo_meses', 'fim_da_recorrencia', 'esta_ativa',
@@ -40,12 +42,12 @@ class Lancamento extends Model
         return $this->recurrence_type !== 'none';
     }
 
-    public function categoria()
+    public function categoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

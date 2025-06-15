@@ -59,12 +59,6 @@ class LancamentoController extends Controller
         ]);
     }
 
-    public function show(Request $request): Response
-    {
-        return Inertia::render('Lancamentos/Show', [
-            'sessions' => $this->sessions($request)->all(),
-        ]);
-    }
 
     public function store(StoreLancamentoRequest $request)
     {

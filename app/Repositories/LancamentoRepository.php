@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use Illuminate\Support\Collection;
 use App\Models\Lancamento;
 use Carbon\Carbon;
 

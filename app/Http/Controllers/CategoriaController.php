@@ -28,9 +28,6 @@ class CategoriaController extends Controller
         ]);
     }
 
-    public function create(Request $request) {}
-
-    public function show(Request $request): Response {}
 
     public function store(Request $request)
     {

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Meta extends Model
 {
@@ -13,16 +14,12 @@ class Meta extends Model
      */
     protected $table = 'metas';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    /** @var list<string> */
     protected $fillable = [
         'user_id', 'titulo', 'descricao', 'valor_a_alcancar', 'valor_atual', 'data_final', 'status',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
