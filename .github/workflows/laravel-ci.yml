@@ -1,4 +1,6 @@
-name: Laravel CI - Testes e Análise de Código
+# .github/workflows/laravel-ci.yml
+
+name: Laravel CI
 
 on:
   push:
@@ -11,43 +13,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Baixa o código do seu repositório
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # 1. Baixa o código do repositório
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # 2. Configura o ambiente PHP
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2' # Use a mesma versão do seu Dockerfile
-        extensions: bcmath, pdo, pdo_pgsql, zip # Adicione extensões necessárias para o composer
-        ini-values: post_max_size=256M, upload_max_filesize=256M
-        coverage: none
+      # 2. Configura o ambiente PHP com a versão mais recente do Composer
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: bcmath, pdo, pdo_pgsql, zip, dom # Adicionada a extensão 'dom', que pode ser necessária
+          tools: composer:v2
 
-    # 3. Copia o .env para rodar os comandos artisan
-    - name: Copy .env file
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      # 3. Copia o .env para rodar os comandos artisan
+      - name: Copy .env file
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
-    # 4. Instala as dependências do Composer
-    - name: Install Composer dependencies
-      run: composer install --dev -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      # 4. Instala as dependências do Composer (com verbosidade máxima)
+      # O padrão do 'composer install' é instalar as dependências de dev, a menos que a flag --no-dev seja usada.
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
 
-    # 5. FORÇA A INSTALAÇÃO DO LARASTAN
-    - name: Ensure Larastan is installed
-      run: composer require --dev larastan/larastan
-        
-    # 5. Gera a chave da aplicação
-    - name: Generate application key
-      run: php artisan key:generate
+      # 5. Gera a chave da aplicação
+      - name: Generate application key
+        run: php artisan key:generate
 
-    # 6. Verifica o estilo do código com Laravel Pint
-    - name: Run Laravel Pint
-      run: vendor/bin/pint --test
-
-    # 7. Executa análise estática com Larastan/PHPStan
-    - name: Run Static Analysis (PHPStan)
-      run: vendor/bin/phpstan analyse
-
-    # 8. Executa os testes (PHPUnit)
-    - name: Run tests
-      run: php artisan test
+      # 6. Executa as verificações de qualidade e os testes
+      - name: Run Analysis & Tests
+        run: |
+          vendor/bin/pint --test
+          vendor/bin/phpstan analyse
+          php artisan test
