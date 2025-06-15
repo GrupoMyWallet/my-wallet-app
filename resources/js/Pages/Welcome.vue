@@ -1,6 +1,7 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, Head } from '@inertiajs/vue3';
 import MyWalletLogo from '@/Components/MyWalletLogo.vue';
+
 
 defineProps({
     canLogin: Boolean,
@@ -9,6 +10,9 @@ defineProps({
 </script>
 
 <template>
+
+    <Head title="Bem Vindo" />
+
     <div class="relative min-h-screen flex flex-col bg-gradient-to-br from-[#FDF6F0] via-white to-[#E7ECFF] dark:from-[#181F2A] dark:via-[#181D27] dark:to-[#202237]">
         <!-- HEADER -->
         <header class="absolute top-0 left-0 w-full z-20 px-4 py-6 sm:px-8">

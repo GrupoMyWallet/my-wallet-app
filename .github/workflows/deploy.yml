@@ -24,11 +24,7 @@ jobs:
           
           # Backup do .env atual
           cp .env .env.backup
-          
-          # Git pull
           git pull origin main
-          
-          # Restaurar .env
           cp .env.backup .env
           
           # Parar containers
@@ -40,8 +36,6 @@ jobs:
           # Subir containers
           docker-compose up -d
 
-          docker exec mywallet_nginx ls -la /var/www/public/build/assets/
-          
           # Aguardar containers iniciarem
           sleep 15
           
@@ -60,9 +54,12 @@ jobs:
           
           # Verificar se assets foram gerados corretamente
           docker exec mywallet_app ls -la /var/www/public/build/
+          docker exec mywallet_nginx ls -la /var/www/public/build/assets/
           
           # Verificar status
           docker-compose ps
           
           echo "✅ Deploy concluído!"
           echo "🌐 Site: https://my-wallet.app.br"
+
+       
