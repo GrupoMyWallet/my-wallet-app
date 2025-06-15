@@ -3,8 +3,10 @@
 namespace App\Repositories;
 
 use App\Models\Lancamento;
+use App\Models\Categoria;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class LancamentoRepository
 {

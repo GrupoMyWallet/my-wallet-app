@@ -43,11 +43,11 @@ class LancamentoController extends Controller
     public function create(Request $request)
     {
 
-        $lancamentos = [];
+        // $lancamentos = [];
 
-        if ($request) {
-            $lancamentos = $request;
-        }
+        // if ($request) {
+        //     $lancamentos = $request;
+        // }
 
         $categorias = Categoria::select('id', 'nome')->get();
         $user = Auth::user();
