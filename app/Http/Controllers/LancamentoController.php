@@ -59,7 +59,6 @@ class LancamentoController extends Controller
         ]);
     }
 
-
     public function store(StoreLancamentoRequest $request)
     {
 

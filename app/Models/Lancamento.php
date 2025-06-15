@@ -29,17 +29,17 @@ class Lancamento extends Model
 
     public function isDespesa()
     {
-        return $this->type === 'despesa';
+        return $this->tipo === 'despesa';
     }
 
     public function isReceita()
     {
-        return $this->type === 'receita';
+        return $this->tipo === 'receita';
     }
 
     public function isRecorrente()
     {
-        return $this->recurrence_type !== 'none';
+        return $this->intervalo_meses !== 0;
     }
 
     public function categoria(): BelongsTo
