@@ -11,7 +11,6 @@ COPY composer.lock composer.lock
 # Instala as dependências do Composer, sem dev, otimizando o autoloader
 RUN composer install --no-interaction --no-plugins --no-scripts --no-dev --prefer-dist --optimize-autoloader
 
-
 # --- Estágio 2: Compilação dos Assets com Node.js ---
 # Usa uma imagem Node.js leve (alpine) para compilar os assets
 FROM node:20-alpine as node_assets
@@ -105,7 +104,6 @@ COPY --from=node_assets /app/public/build /var/www/public/build
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 RUN chmod -R 755 /var/www/public
-
 
 # Expõe a porta 9000 para o PHP-FPM
 EXPOSE 9000
