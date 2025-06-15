@@ -32,8 +32,9 @@ jobs:
     - name: Install Composer dependencies
       run: composer install --dev -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-    - name: Diagnose Larastan installation
-      run: composer why-not larastan/larastan 3.4
+    # 5. FORÇA A INSTALAÇÃO DO LARASTAN
+    - name: Ensure Larastan is installed
+      run: composer require --dev larastan/larastan
         
     # 5. Gera a chave da aplicação
     - name: Generate application key
