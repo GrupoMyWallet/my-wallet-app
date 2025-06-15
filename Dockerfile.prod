@@ -58,6 +58,7 @@ RUN apk add --no-cache \
       libzip \
       libpq \
       libjpeg \
+      freetype \
       # Outros pacotes necessários
       supervisor \
       # Adicione outras bibliotecas de runtime se faltar alguma
