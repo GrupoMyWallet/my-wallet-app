@@ -30,8 +30,14 @@ jobs:
 
     # 4. Instala as dependências do Composer
     - name: Install Composer dependencies
-      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
+    - name: Verify Larastan installation
+      run: |
+        echo "Verifying Larastan files..."
+        ls -la vendor/bin/
+        ls -la vendor/nunomaduro/larastan/
+        
     # 5. Gera a chave da aplicação
     - name: Generate application key
       run: php artisan key:generate
