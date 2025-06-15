@@ -32,11 +32,9 @@ jobs:
     - name: Install Composer dependencies
       run: composer install --dev -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-    - name: Verify Larastan installation
-      run: |
-        echo "Verifying Larastan files..."
-        ls -la vendor/bin/
-        ls -la vendor/nunomaduro/larastan/
+    - name: Diagnose Larastan installation
+      # Este comando força o Composer a nos dizer por que ele não pode/quer instalar o larastan
+      run: composer why-not larastan/larastan
         
     # 5. Gera a chave da aplicação
     - name: Generate application key
