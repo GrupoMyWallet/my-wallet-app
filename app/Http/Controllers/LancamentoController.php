@@ -55,7 +55,6 @@ class LancamentoController extends Controller
         return Inertia::render('Lancamentos/Create', [
             'user' => $user,
             'categorias' => $categorias,
-            'lancamentos' => $lancamentos,
         ]);
     }
 
