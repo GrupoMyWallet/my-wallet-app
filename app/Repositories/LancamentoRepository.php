@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\Models\Lancamento;
 use App\Models\Categoria;
+use App\Models\Lancamento;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
