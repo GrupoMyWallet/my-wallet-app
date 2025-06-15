@@ -1,0 +1,47 @@
+# Ignorar diretórios de controle de versão
+.git
+.gitignore
+.gitmodules
+
+# Ignorar diretórios de dependências (serão instalados dentro do container)
+node_modules/
+vendor/
+
+# Ignorar arquivos de ambiente (sensíveis e específicos do ambiente)
+.env
+.env.*
+.env.example # Se você não precisa dele no container
+
+# Ignorar arquivos de cache e logs (serão gerados ou são temporários)
+storage/*.log
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*.php
+.phpunit.result.cache
+.php_cs.cache
+
+# Ignorar arquivos de build do frontend (serão gerados no estágio node_assets)
+public/build/ # O diretório de saída do Vite/Mix
+
+# Ignorar arquivos de configuração de IDEs e editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignorar arquivos de teste e documentação (se não forem necessários em produção)
+tests/
+phpstan.neon
+phpunit.xml
+README.md
+CONTRIBUTING.md
+LICENSE.md
+
+# Ignorar arquivos temporários e de sistema
+*.swp
+*.swo
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db

@@ -34,6 +34,9 @@ COPY --from=vendor /app/vendor/ /app/vendor/
 RUN npm install
 RUN npm run build
 
+RUN npm cache clean --force
+RUN rm -rf node_modules
+
 
 # --- Estágio 3: Imagem Final de Produção (PHP-FPM) ---
 # Usa uma imagem PHP-FPM leve (alpine) para a aplicação final
