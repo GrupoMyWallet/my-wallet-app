@@ -55,7 +55,7 @@ RUN apk add --no-cache \
       libwebp-dev \
       gmp-dev \
       # Dependências de RUNTIME (PRECISAM PERMANECER)
-      libpng16 \
+      libpng \
       libzip \
       libpq \
       # Outros pacotes necessários
