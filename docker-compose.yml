@@ -12,7 +12,7 @@ services:
     volumes:
       # Volume para persistir dados gerados pela aplicação (ex: uploads de usuários)
       - app-storage-data:/var/www/storage/app
-      - ./my-wallet-app/.env:/var/www/.env #
+      - ./.env:/var/www/.env 
     depends_on:
       - postgres
     networks:
