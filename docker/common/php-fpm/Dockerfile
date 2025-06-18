@@ -3,6 +3,8 @@ FROM php:8.2-fpm AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     unzip \
+    nodejs \
+    npm \
     libpq-dev \
     libonig-dev \
     libssl-dev \
