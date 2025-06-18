@@ -13,10 +13,10 @@ jobs:
       - name: Execute deploy script on server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
+          port: ${{ secrets.PORT }}
           script: |
             cd /root/my-wallet-app
             sh ./scripts/deploy.sh
