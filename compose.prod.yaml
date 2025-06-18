@@ -38,16 +38,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-  php-cli:
-    build:
-      context: .
-      dockerfile: ./docker/php-cli/Dockerfile
-    tty: true 
-    stdin_open: true 
-    env_file:
-      - .env
-    networks:
-      - mywallet-production
 
   postgres:
     image: postgres:15-alpine
