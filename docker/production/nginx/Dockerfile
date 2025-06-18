@@ -17,10 +17,12 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 WORKDIR /var/www
 
 COPY composer.json composer.lock package.json package-lock.json ./
-RUN composer install --no-dev --no-interaction --optimize-autoloader
+RUN composer install --no-dev --no-interaction --no-scripts --no-autoloader
 
 # Copy Laravel application code
 COPY . /var/www
+
+RUN composer dump-autoload --no-dev --optimize
 
 # Install Node.js dependencies and build assets
 RUN npm install && npm run build
