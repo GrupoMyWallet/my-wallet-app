@@ -1,8 +1,6 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: ./docker/production/nginx/Dockerfile
+    image: ghcr.io/duduhenriquemg/my-wallet-app/web:latest
     restart: unless-stopped
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
@@ -19,10 +17,7 @@ services:
 
   php-fpm:
     
-    build:
-      context: .
-      dockerfile: ./docker/common/php-fpm/Dockerfile
-      target: production
+    image: ghcr.io/duduhenriquemg/my-wallet-app/php-fpm:latest
     restart: unless-stopped
     volumes:
       - mywallet-storage-production:/var/www/storage 
@@ -39,9 +34,7 @@ services:
       postgres:
         condition: service_healthy
   php-cli:
-    build:
-      context: .
-      dockerfile: ./docker/production/php-cli/Dockerfile
+    image: ghcr.io/duduhenriquemg/my-wallet-app/php-cli:latest
     tty: true 
     stdin_open: true 
     env_file:

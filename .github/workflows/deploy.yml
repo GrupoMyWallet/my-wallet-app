@@ -1,22 +1,28 @@
 name: Deploy to Production
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build and Push Docker Images"]
+    types:
+      - completed
+    branches:
+      - main
 
 jobs:
-  deploy:
-    name: Deploy to Droplet
-    runs-on: ubuntu-latest # O workflow roda em uma máquina virtual do GitHub
+  deploy_to_production:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+
+    if: github.event.workflow_run.conclusion == 'success'
 
     steps:
-      # Passo 1: Conectar ao Droplet via SSH e executar o script de deploy
-      - name: Execute deploy script on server
+      - name: Deploy to production server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.PORT }}
           script: |
             cd /root/my-wallet-app
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             sh ./scripts/deploy.sh

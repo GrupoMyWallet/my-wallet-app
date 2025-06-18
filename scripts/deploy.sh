@@ -1,35 +1,34 @@
 #!/bin/sh
-set -e # Para o script se qualquer comando falhar
+set -e
 
 echo "🚀 Iniciando deploy..."
 
-# 1. Entra no modo de manutenção
-# (Opcional, mas bom para evitar que usuários vejam erros durante o deploy)
-docker compose -f compose.prod.yaml exec php-fpm php artisan down || echo "Aplicação já está em modo de manutenção."
-
-# 2. Puxa as últimas alterações do repositório
+# Puxa as ultimas alterações
 git pull origin main
 
-# 3. Instala dependências do Composer (se o composer.lock mudou)
-# O Dockerfile já faz isso no build, mas pode ser uma segurança extra
-# docker compose -f compose.prod.yaml run --rm composer install --no-dev --optimize-autoloader
+# Entra no modo de manutenção
+docker compose -f compose.prod.yaml exec php-fpm php artisan down || echo "Aplicação já está em modo de manutenção."
 
-# 4. Reconstrói e reinicia os contêineres
+# Puxa as imagens do github
+docker compose -f compose.prod.yaml pull
+
+# Reconstrói e reinicia os contêineres
 echo "🏗️  Construindo e reiniciando os contêineres..."
-docker compose -f compose.prod.yaml up --build -d
+docker compose -f compose.prod.yaml up -d --remove-orphans
 
-# 5. Executa as migrações do banco de dados
+# Executa as migrações do banco de dados
 echo "⚙️  Executando migrações..."
 docker compose -f compose.prod.yaml exec php-fpm php artisan migrate --force
 
-# 6. Limpa e otimiza a aplicação
+# Limpa e otimiza a aplicação
 echo "✨ Otimizando a aplicação..."
 docker compose -f compose.prod.yaml exec php-fpm php artisan optimize:clear
 docker compose -f compose.prod.yaml exec php-fpm php artisan optimize
 
-# 7. Sai do modo de manutenção
+# Sai do modo de manutenção
 docker compose -f compose.prod.yaml exec php-fpm php artisan up
 
+# Limpa as imagens antigas
 docker image prune -f
 
 echo "✅ Deploy finalizado com sucesso!"
