@@ -6,6 +6,8 @@ FROM php:8.2-cli AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     unzip \
+    nodejs \
+    npm \
     libpq-dev \
     libonig-dev \
     libssl-dev \
@@ -26,18 +28,38 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && docker-php-ext-enable redis \
     && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN docker-php-ext-install -j$(nproc) \
+    pdo_mysql \
+    pdo_pgsql \
+    pgsql \
+    opcache \
+    intl \
+    zip \
+    bcmath \
+    soap \
+    && pecl install redis \
+    && docker-php-ext-enable redis
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+&& composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
+
 # Set the working directory inside the container
 WORKDIR /var/www
+
+COPY composer.json composer.lock package.json package-lock.json ./
+
+# Instala dependências PHP sem rodar scripts
+RUN composer install --no-dev --no-interaction --no-scripts --no-autoloader
 
 # Copy the entire Laravel application code into the container
 COPY . /var/www
 
 # Install Composer and dependencies
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
+RUN composer dump-autoload --no-dev --optimize
+RUN npm install && npm run build
 
 # Stage 2: Production environment
-FROM php:8.4-cli
+FROM php:8.2-cli
 
 # Install client libraries required for php extensions in runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
