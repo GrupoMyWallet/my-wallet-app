@@ -1,47 +1,106 @@
-# Ignorar diretórios de controle de versão
+# --- Git ---
 .git
 .gitignore
-.gitmodules
+.gitattributes
+.github
 
-# Ignorar diretórios de dependências (serão instalados dentro do container)
-node_modules/
-vendor/
-
-# Ignorar arquivos de ambiente (sensíveis e específicos do ambiente)
-.env
-.env.*
-.env.example # Se você não precisa dele no container
-
-# Ignorar arquivos de cache e logs (serão gerados ou são temporários)
-storage/*.log
-storage/framework/cache/*
-storage/framework/sessions/*
-storage/framework/views/*
-bootstrap/cache/*.php
-.phpunit.result.cache
-.php_cs.cache
-
-# Ignorar arquivos de build do frontend (serão gerados no estágio node_assets)
-public/build/ # O diretório de saída do Vite/Mix
-
-# Ignorar arquivos de configuração de IDEs e editores
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# Ignorar arquivos de teste e documentação (se não forem necessários em produção)
-tests/
-phpstan.neon
-phpunit.xml
+# --- Documentation ---
 README.md
-CONTRIBUTING.md
-LICENSE.md
+CHANGELOG.md
+LICENSE
+*.md
 
-# Ignorar arquivos temporários e de sistema
+# --- IDE and Editor ---
+.vscode
+.idea
 *.swp
 *.swo
-*.bak
-*.tmp
+.fleet
+
+# --- OS Files ---
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+
+# --- Environment Files ---
+.env
+.env.*
+!.env.example
+
+# --- Dependencies (serão instaladas no container) ---
+node_modules
+vendor
+
+# --- Build Artifacts (serão gerados no container) ---
+/public/build
+/public/hot
+/public/mix-manifest.json
+/public/js
+/public/css
+npm-debug.log
+yarn-error.log
+
+# --- Storage and Cache ---
+/storage/app/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+!/storage/app/.gitignore
+!/storage/framework/.gitignore
+!/storage/framework/cache/.gitignore
+!/storage/framework/sessions/.gitignore
+!/storage/framework/views/.gitignore
+!/storage/logs/.gitignore
+
+# --- Testing ---
+/tests
+/coverage
+/.phpunit.cache
+/.phpunit.result.cache
+phpunit.xml
+dusk.php
+
+# --- Docker Files (não precisam estar dentro da imagem) ---
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# --- Deployment Files ---
+deployment-backup-*.txt
+backups/
+*.backup
+*.bak
+
+# --- SSL/Certificates ---
+/certbot
+
+# --- Logs ---
+*.log
+
+# --- Temporary Files ---
+*.tmp
+*.temp
+.cache
+.npm
+
+# --- Development Tools ---
+.vagrant
+.homestead
+Homestead.json
+Homestead.yaml
+
+# --- Package Lock Files (npm ci usa package-lock.json se existir) ---
+# Manter package-lock.json para builds consistentes
+# yarn.lock
+
+# --- Laravel Specific ---
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+auth.json
+
+scripts/deploy.sh

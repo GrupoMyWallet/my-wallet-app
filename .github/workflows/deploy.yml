@@ -5,59 +5,18 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    
+    name: Deploy to Droplet
+    runs-on: ubuntu-latest # O workflow roda em uma máquina virtual do GitHub
+
     steps:
-    - name: Deploy to server
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.PORT }}
-        script: |
-          cd /root/my-wallet-app
-          
-          echo "🚀 Iniciando deploy automático..."
-          
-          # Backup do .env atual
-          cp .env .env.backup
-          git pull origin main
-          cp .env.backup .env
-          
-          # Parar containers
-          docker-compose down
-          
-          # Build da aplicação (sem cache para garantir assets atualizados)
-          docker-compose build --no-cache app
-          
-          # Subir containers
-          docker-compose up -d
-
-          # Aguardar containers iniciarem
-          sleep 15
-          
-          # Configurar Laravel
-          docker exec mywallet_app php artisan key:generate --force
-          docker exec mywallet_app php artisan config:cache
-          docker exec mywallet_app php artisan route:cache
-          docker exec mywallet_app php artisan view:cache
-          
-          # Executar migrations
-          docker exec mywallet_app php artisan migrate --force
-          
-          # Ajustar permissões
-          docker exec mywallet_app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-          docker exec mywallet_app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-          
-          # Verificar se assets foram gerados corretamente
-          docker exec mywallet_app ls -la /var/www/public/build/
-          docker exec mywallet_nginx ls -la /var/www/public/build/assets/
-          
-          # Verificar status
-          docker-compose ps
-          
-          echo "✅ Deploy concluído!"
-          echo "🌐 Site: https://my-wallet.app.br"
-
-       
+      # Passo 1: Conectar ao Droplet via SSH e executar o script de deploy
+      - name: Execute deploy script on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /root/my-wallet-app
+            sh ./scripts/deploy.sh

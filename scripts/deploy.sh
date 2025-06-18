@@ -1,29 +1,33 @@
-#!/bin/bash
+#!/bin/sh
+set -e # Para o script se qualquer comando falhar
 
-set -e
+echo "🚀 Iniciando deploy..."
 
-echo "🚀 Deploy MyWallet - $(date)"
+# 1. Entra no modo de manutenção
+# (Opcional, mas bom para evitar que usuários vejam erros durante o deploy)
+docker compose -f compose.prod.yaml exec php-fpm php artisan down || echo "Aplicação já está em modo de manutenção."
 
-# Backup
-cp .env .env.backup.$(date +%Y%m%d_%H%M%S)
-
-
+# 2. Puxa as últimas alterações do repositório
 git pull origin main
 
-docker-compose down
-rm -rf ./public/build/*
-docker-compose build --no-cache app
-docker-compose up -d
+# 3. Instala dependências do Composer (se o composer.lock mudou)
+# O Dockerfile já faz isso no build, mas pode ser uma segurança extra
+# docker compose -f compose.prod.yaml run --rm composer install --no-dev --optimize-autoloader
 
+# 4. Reconstrói e reinicia os contêineres
+echo "🏗️  Construindo e reiniciando os contêineres..."
+docker compose -f compose.prod.yaml up --build -d
 
-sleep 20
+# 5. Executa as migrações do banco de dados
+echo "⚙️  Executando migrações..."
+docker compose -f compose.prod.yaml exec php-fpm php artisan migrate --force
 
-docker exec mywallet_app php artisan config:cache
-docker exec mywallet_app php artisan route:cache  
-docker exec mywallet_app php artisan view:cache
-docker exec mywallet_app php artisan migrate --force
+# 6. Limpa e otimiza a aplicação
+echo "✨ Otimizando a aplicação..."
+docker compose -f compose.prod.yaml exec php-fpm php artisan optimize:clear
+docker compose -f compose.prod.yaml exec php-fpm php artisan optimize
 
-docker exec mywallet_app ls -la /var/www/public/build/
-docker-compose ps
+# 7. Sai do modo de manutenção
+docker compose -f compose.prod.yaml exec php-fpm php artisan up
 
-echo "✅ Deploy concluído!"
+echo "✅ Deploy finalizado com sucesso!"
