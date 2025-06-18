@@ -41,7 +41,7 @@ services:
   php-cli:
     build:
       context: .
-      dockerfile: ./docker/common/php-cli/Dockerfile
+      dockerfile: ./docker/production/php-cli/Dockerfile
     tty: true 
     stdin_open: true 
     env_file:
