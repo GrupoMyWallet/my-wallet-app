@@ -30,4 +30,6 @@ docker compose -f compose.prod.yaml exec php-fpm php artisan optimize
 # 7. Sai do modo de manutenção
 docker compose -f compose.prod.yaml exec php-fpm php artisan up
 
+docker image prune -f
+
 echo "✅ Deploy finalizado com sucesso!"

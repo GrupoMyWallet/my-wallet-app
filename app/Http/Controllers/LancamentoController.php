@@ -64,10 +64,11 @@ class LancamentoController extends Controller
         $lancamentos_validados = $request->validated();
 
         $lancamentos = array_map(function ($lancamento) {
-            $lancamento['data'] = Carbon::createFromFormat('d/m/Y', $lancamento['data'])->format('Y-m-d');
             $lancamento['user_id'] = auth()->id();
             $lancamento['created_at'] = now();
             $lancamento['updated_at'] = now();
+            $lancamento['data'] = Carbon::createFromFormat('d/m/Y', $lancamento['data'])->format('Y-m-d');
+            $lancamento['fim_da_recorrencia'] ? $lancamento['fim_da_recorrencia'] = Carbon::createFromFormat('d/m/Y', $lancamento['fim_da_recorrencia'])->format('Y-m-d') : null;
 
             return $lancamento;
         }, $lancamentos_validados['lancamentos']);
@@ -80,10 +81,11 @@ class LancamentoController extends Controller
     public function update(UpdateLancamentoRequest $request, $id)
     {
         try {
-            $lancamento_validado = $request->validated();
-            $lancamento_validado['data'] = Carbon::createFromFormat('d/m/Y', $lancamento_validado['data'])->format('Y-m-d');
-
-            $this->lancamentoRepository->update($id, $lancamento_validado);
+            $lancamento = $request->validated();
+            $lancamento['data'] = Carbon::createFromFormat('d/m/Y', $lancamento['data'])->format('Y-m-d');
+            $lancamento['fim_da_recorrencia'] ? $lancamento['fim_da_recorrencia'] = Carbon::createFromFormat('d/m/Y', $lancamento['fim_da_recorrencia'])->format('Y-m-d') : null;
+            
+            $this->lancamentoRepository->update($id, $lancamento);
 
             return redirect()->route('lancamentos.index')->with('success', 'Lançamento atualizado com sucesso!');
         } catch (\Illuminate\Validation\ValidationException $e) {
