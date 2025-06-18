@@ -38,13 +38,23 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+  php-cli:
+    build:
+      context: .
+      dockerfile: ./docker/common/php-cli/Dockerfile
+    tty: true 
+    stdin_open: true 
+    env_file:
+      - .env
+    networks:
+      - mywallet-production
 
   postgres:
     image: postgres:15-alpine
     restart: unless-stopped
     user: postgres
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${DB_PORT}:5432"
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
