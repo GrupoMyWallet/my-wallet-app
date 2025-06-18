@@ -1,23 +1,22 @@
 
-FROM debian AS builder
+FROM php:8.2-cli AS builder
 
-# Install Node.js and build tools
+# Instala as dependências de build: Node.js e Git
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
     unzip \
     nodejs \
     npm \
-    php-cli \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install Composer globally
+# Instala o Composer (a imagem php:cli não vem com ele por padrão)
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Set working directory
 WORKDIR /var/www
 
-COPY composer.json composer.lock ./
+COPY composer.json composer.lock package.json package-lock.json ./
 RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 # Copy Laravel application code
@@ -35,11 +34,6 @@ FROM nginx:alpine
 # that is optimized for serving a Laravel application.
 # -----------------------------------------------------------
 COPY ./docker/production/nginx/nginx.conf /etc/nginx/nginx.conf
-
-# Copy Laravel's public assets from the builder stage
-# -----------------------------------------------------------
-# We only need the 'public' directory from our Laravel app.
-# -----------------------------------------------------------
 COPY --from=builder /var/www/public /var/www/public
 
 # Set the working directory to the public folder
