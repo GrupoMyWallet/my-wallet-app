@@ -4,12 +4,21 @@ FROM debian AS builder
 # Install Node.js and build tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    git \
+    unzip \
     nodejs \
     npm \
+    php-cli \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install Composer globally
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Set working directory
 WORKDIR /var/www
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 # Copy Laravel application code
 COPY . /var/www
