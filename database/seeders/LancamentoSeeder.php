@@ -13,9 +13,7 @@ class LancamentoSeeder extends Seeder
      */
     public function run(): void
     {
-        $userId = 1; // Assumindo que existe um usuário com ID 1
-        $now = Carbon::now();
-
+    
         $lancamentos = [
             // Receitas
             [
