@@ -18,26 +18,56 @@ MyWallet é uma ferramenta intuitiva para ajudar usuários a ter um controle cla
 *   ✅ Criação de orçamentos mensais por categoria.
 *   ✅ Dashboards e resumos visuais com o balanço mensal e anual.
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias Utilizadas e Arquiteura do Projeto (Lógica e Física)
+
+As seguintes tecnologias estão sendo utilizadas para o desenvolvimento do sistema:
 
 - [Laravel 12](https://laravel.com)
-- [Vue 3 + Vite](https://vuejs.org/)
+- [Vue 3](https://vuejs.org/)
 - [Inertia.js](https://inertiajs.com/) para integração Vue + Laravel sem APIs REST tradicionais
+- [Laravel Jetstream](https://jetstream.laravel.com/) com autenticação, recuperação de senha, verificação de e-mail, gerenciamento de sessão, etc.
 - [PostgreSQL 15](https://www.postgresql.org/)
-- [Containers: Docker + Docker Compose](https://www.docker.com/)
-- [Laravel Jetstream](https://jetstream.laravel.com/) com autenticação, verificação de e-mail, sessão de usuários, etc.
+- [Containers Docker + Docker Compose para orquestração](https://www.docker.com/)
 - **Servidor Web:** Nginx
 - **CI/CD:** GitHub Actions
 
-## 🔐 Autenticação
+### Estilo Arquitetual
 
-Este projeto já vem com autenticação usando Laravel Jetstream com Inertia.js:
+O sistema utiliza uma Arquitetura em Camadas em seu monólito Laravel, garantindo uma clara separação de responsabilidades. Camadas do sistema:
 
-- Registro de usuários
-- Login
-- Recuperação de senha (Precisa ser configurada no código e precisa de um server SMTP)
-- Verificação de e-mail (Precisa ser configurada no código e precisa de um server SMTP)
-- Gerenciamento de sessão
+- **Camada de Apresentação**: Controllers + Views (Inertia/Vue.js)
+- **Camada de Negócio**: Services (regras de negócio)
+- **Camada de Acesso aos Dados**: Repositories + Models 
+
+Com a adição do processamento de arquivos, a arquitetura evolui para um modelo Híbrido com elementos de Arquitetura Orientada a Serviços, onde a funcionalidade em Python atua como um serviço especializado e desacoplado para extração de dados.
+
+### Descrição da Infraestrutura Física 
+
+A infraestrutura do sistema é projetada para ser robusta e consistente, utillizando containers docker e automatização através de um pipeline de CI/CD via GitHub Actions .
+
+**Servidor:**
+- **DigitalOcean Droplet**: 2 vCPUs, 4GB RAM, 80GB SSD
+- **Ubuntu 22.04 LTS** com Docker Engine
+
+**Rede:**
+- **Docker Bridge Network**: Comunicação interna entre containers (python e aplicação laravel)
+- **Nginx Reverse Proxy**: Roteamento HTTP/HTTPS
+- **SSL/TLS**: Certificado Let's Encrypt
+- **Domínio**: Domínio regsistrado no registro.br
+
+**Armazenamento:**
+- **Volume persistente**: PostgreSQL data
+
+**Monitoramento:**
+- **Docker health checks** em todos os containers
+- **Laravel logs** centralizados
+
+### Pipeline de CI/CD com GitHub Actions
+
+O deploy é 100% automatizado.
+
+1.  **`build.yml`:** A cada `push` na branch `main`, este workflow é acionado. Ele builda as imagens Docker se preciso e publica no GHCR.**GitHub Container Registry (GHCR)**.
+2.  **`deploy.yml`:** Assim que o workflow de build termina com sucesso, este segundo workflow se conecta via SSH no servidor e executa o deploy com `deploy.sh`.
 
 ## 📂 Estrutura de Diretórios do Docker
 
@@ -177,43 +207,6 @@ Siga os passos abaixo para configurar e rodar o projeto em sua máquina local.
 - Acessar o container: `docker compose -f compose.dev.yaml exec -it php-cli bash`
 - Ver logs: `docker compose -f compose.dev.yaml logs -f`
 - Subir a aplicação `docker compose -f compose.dev.yaml exec php-cli composer run dev`
-
-## 🏭 Arquitetura e Deploy em Produção
-
-O ambiente de produção é projetado para ser robusto e automatizado através de um pipeline de CI/CD via GitHub Actions.
-
-### Estrutura de Produção: 3 Dockerfiles principais
-
-A aplicação utiliza três `Dockerfile` distintos em produção, cada um com uma responsabilidade clara:
-
-| Dockerfile | Função                                        |
-| ---------- | --------------------------------------------- |
-| `php-fpm`  | Executa o Laravel em produção                 |
-| `nginx`    | Proxy reverso e entrega de arquivos estáticos |
-| `php-cli`  | Rodar comandos Artisan/Migrations             |
-
-### Pipeline de CI/CD com GitHub Actions
-
-O deploy é 100% automatizado.
-
-1.  **`build.yml`:** A cada `push` na branch `main`, este workflow é acionado. Ele builda as imagens Docker, faz cache e publica no GHCR.**GitHub Container Registry (GHCR)**.
-2.  **`deploy.yml`:** Assim que o workflow de build termina com sucesso, este segundo workflow se conecta via SSH no servidor e executa o deploy com `deploy.sh`.
-
-### Configurando um Servidor de Produção
-
-
-1.  **Pré-requisitos do Servidor:**
-    *   Um servidor Linux.
-    *   Docker e Docker Compose instalados.
-    *   Git instalado.
-    *   KEYS e SSH configurados no GitHub Actions
-    *   Imagens publicadas no GHCR ou arquivos ajustados para buildar a imagem no servidor
-
-2.  **Passos:**
-    *   Clone o repositório no servidor.
-    *   Crie e configure o arquivo `.env` com as configurações de produção.
-    *   Crie e publique as imagens no GHCR ou ajuste os arquivos necessários (compose.prod.yaml, deploy.yml, deploy.sh) para rodar a imagem dentro do servidor.
-    *   Rode o script `deploy.sh` no servidor, para aplicar o deploy.
 
 ## 🧾 Licença
 
