@@ -18,7 +18,7 @@ MyWallet é uma ferramenta intuitiva para ajudar usuários a ter um controle cla
 *   ✅ Criação de orçamentos mensais por categoria.
 *   ✅ Dashboards e resumos visuais com o balanço mensal e anual.
 
-## 🛠️ Tecnologias Utilizadas e Arquiteura do Projeto (Lógica e Física)
+## 🛠️ Tecnologias Utilizadas e Arquiteturas do Projeto (Lógica e Física)
 
 As seguintes tecnologias estão sendo utilizadas para o desenvolvimento do sistema:
 
@@ -31,9 +31,9 @@ As seguintes tecnologias estão sendo utilizadas para o desenvolvimento do siste
 - **Servidor Web:** Nginx
 - **CI/CD:** GitHub Actions
 
-### Estilo Arquitetual
+### Estilo de Arquitetura
 
-O sistema utiliza uma Arquitetura em Camadas em seu monólito Laravel, garantindo uma clara separação de responsabilidades. Camadas do sistema:
+O sistema utiliza uma Arquitetura em Camadas em um monólito Laravel, garantindo uma clara separação de responsabilidades. Camadas do sistema:
 
 - **Camada de Apresentação**: Controllers + Views (Inertia/Vue.js)
 - **Camada de Negócio**: Services (regras de negócio)
