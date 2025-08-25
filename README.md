@@ -18,7 +18,7 @@ MyWallet é uma ferramenta intuitiva para ajudar usuários a ter um controle cla
 *   ✅ Criação de orçamentos mensais por categoria.
 *   ✅ Dashboards e resumos visuais com o balanço mensal e anual.
 
-## 🛠️ Tecnologias Utilizadas e Arquiteturas do Projeto (Lógica e Física)
+##  Tecnologias Utilizadas 
 
 As seguintes tecnologias estão sendo utilizadas para o desenvolvimento do sistema:
 
@@ -31,19 +31,85 @@ As seguintes tecnologias estão sendo utilizadas para o desenvolvimento do siste
 - **Servidor Web:** Nginx
 - **CI/CD:** GitHub Actions
 
-### Estilo de Arquitetura
+## Estilo de Arquitetura
 
-O sistema utiliza uma Arquitetura em Camadas em um monólito Laravel, garantindo uma clara separação de responsabilidades. Camadas do sistema:
+O sistema utiliza uma Arquitetura em Camadas em um monólito moderno Laravel com Inertia, onde o frontend e backend com linguagens diferentes permanecem na mesma aplicação e no mesmo servidor, garantindo uma clara separação de responsabilidades. Camadas do sistema:
 
 - **Camada de Apresentação**: Controllers + Views (Inertia/Vue.js)
 - **Camada de Negócio**: Services (regras de negócio)
-- **Camada de Acesso aos Dados**: Repositories + Models 
+- **Camada de Acesso aos Dados**: Repositories
+- **Camada de Dominio**: Models
 
-Com a adição do processamento de arquivos, a arquitetura evolui para um modelo Híbrido com elementos de Arquitetura Orientada a Serviços, onde a funcionalidade em Python atua como um serviço especializado e desacoplado para extração de dados.
+Com a adição do processamento de arquivos em python, a arquitetura pode evoluie para um modelo Híbrido com elementos de Arquitetura Orientada a Serviços, onde o processamento atua como um serviço especializado e desacoplado para extração de dados.
 
-### Descrição da Infraestrutura Física 
+### Diagrama de Pacotes Representando a Arquitetura da Aplicação:
 
-A infraestrutura do sistema é projetada para ser robusta e consistente, utillizando containers docker e automatização através de um pipeline de CI/CD via GitHub Actions .
+```mermaid
+---
+config:
+  layout: dagre
+  look: classic
+  theme: mc
+---
+flowchart LR
+ subgraph Usuario["Usuário"]
+        User["👤 Usuário"]
+  end
+ subgraph Frontend["Frontend"]
+        Vue["Vue.js + Inertia"]
+  end
+ subgraph CamadaApresentacao["Camada de Apresentação"]
+        Middleware["Middleware"]
+        Controllers["Controllers"]
+  end
+ subgraph CamadaServico["Camada de Negócio"]
+        Services["Services"]
+  end
+ subgraph CamadaAcessoDados["Camada de Acesso aos Dados"]
+        Repositories["Repositories"]
+  end
+ subgraph CamadaDominio["Camada de Domínio"]
+        Models["Eloquent Models"]
+  end
+ subgraph Backend["Backend"]
+        CamadaApresentacao
+        CamadaServico
+        CamadaAcessoDados
+        CamadaDominio
+  end
+ subgraph Autenticacao["Autenticação"]
+        Jetstream["Laravel Jetstream"]
+  end
+ subgraph ServicoProcessamentoPython["Serviço de Processamento em Python"]
+        PythonWorker["Python Worker"]
+  end
+ subgraph InfraestruturaSuporte["Infraestrutura Suporte"]
+        DB["PostgreSQL"]
+        Queue["Queue System"]
+  end
+ subgraph AplicacaoMinhaCarteira["Aplicação"]
+        Frontend
+        Backend
+        Autenticacao
+        ServicoProcessamentoPython
+        InfraestruturaSuporte
+  end
+    User -- |Requisição HTTP| --> Vue
+    Vue -. Inertia Request .-> Middleware
+    Middleware -. Autorizado .-> Controllers
+    Controllers --> Services
+    Services --> Repositories
+    Repositories --> Models
+    Models -- |CRUD| --> DB
+    Jetstream -. Fornece .-> Middleware
+    Services -. Envia Job .-> Queue
+    Queue -. Consome Job .-> PythonWorker
+    PythonWorker -. Processa e chama API .-> Controllers
+```
+
+## Descrição da Infraestrutura Física 
+
+A infraestrutura do sistema é projetada para ser robusta e consistente, utillizando containers docker dentro de um servidor e automatização através de um pipeline de CI/CD via GitHub Actions .
 
 **Servidor:**
 - **DigitalOcean Droplet**: 2 vCPUs, 4GB RAM, 80GB SSD
@@ -108,7 +174,7 @@ my-walet-app/
 ├── ...
 ```
 
-## ⚙️ Ambiente de Desenvolvimento
+## Configurando o Ambiente de Desenvolvimento
 
 Siga os passos abaixo para configurar e rodar o projeto em sua máquina local.
 
@@ -198,9 +264,9 @@ Siga os passos abaixo para configurar e rodar o projeto em sua máquina local.
     docker compose -f compose.dev.yaml exec -it php-cli sh
     ```
 
-🎉 **Pronto!** Agora você pode acessar a aplicação em [http://localhost:8000](http://localhost:8000) (ou a porta que você definiu no .env em `APP_URL`).
+**Pronto!** Agora você pode acessar a aplicação em [http://localhost:8000](http://localhost:8000) (ou a porta que você definiu no .env em `APP_URL`).
 
-### 🛠️ Comandos úteis para
+### Comandos úteis para
 
 - Subir e buildar os containers: `docker compose -f compose.dev.yaml up -d --build`
 - Parar os containers: `docker compose -f compose.dev.yaml down`
@@ -208,6 +274,6 @@ Siga os passos abaixo para configurar e rodar o projeto em sua máquina local.
 - Ver logs: `docker compose -f compose.dev.yaml logs -f`
 - Subir a aplicação `docker compose -f compose.dev.yaml exec php-cli composer run dev`
 
-## 🧾 Licença
+## Licença
 
 Este projeto está licenciado sob a Apache 2.0 License.
