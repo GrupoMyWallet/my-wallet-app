@@ -5,10 +5,10 @@ services:
       # Mount the application code for live updates
       - ./:/var/www
       # Mount the Nginx configuration file
-      - ./docker/development/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/development/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
       # Map port 80 inside the container to the port specified by 'NGINX_PORT' on the host machine
-      - "80:80"
+      - "8080:80"
     environment:
       - NGINX_HOST=localhost
     networks:
@@ -19,6 +19,7 @@ services:
 
   php-fpm:
     # For the php-fpm service, we will use our common PHP-FPM Dockerfile with the development target
+    platform: linux/amd64
     build:
       context: .
       dockerfile: ./docker/common/php-fpm/Dockerfile
@@ -61,6 +62,8 @@ services:
         XDEBUG_LOG_LEVEL: 0
     tty: true # Enables an interactive terminal
     stdin_open: true # Keeps standard input open for 'docker exec'
+    ports:
+    - "5173:5173"
     env_file:
       - .env
     volumes:

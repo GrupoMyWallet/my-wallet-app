@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     intl \
     zip \
     bcmath \
+    pcntl \
     soap \
     && pecl install redis xdebug \
     && docker-php-ext-enable redis xdebug\
@@ -61,21 +62,12 @@ RUN if getent group ${GID}; then \
     usermod -aG sudo www && \
     echo 'www ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# Switch to the non-root user to install NVM and Node.js
+# Install Node.js directly (more reliable than NVM for containers)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs
+
+# Switch to the non-root user
 USER www
-
-# Install NVM (Node Version Manager) as the www user
-RUN export NVM_DIR="$HOME/.nvm" && \
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash && \
-    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && \
-    nvm install ${NODE_VERSION} && \
-    nvm alias default ${NODE_VERSION} && \
-    nvm use default
-
-# Ensure NVM is available for all future shells
-RUN echo 'export NVM_DIR="$HOME/.nvm"' >> /home/www/.bashrc && \
-    echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> /home/www/.bashrc && \
-    echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> /home/www/.bashrc
 
 # Set the working directory
 WORKDIR /var/www
