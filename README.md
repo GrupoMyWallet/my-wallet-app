@@ -33,14 +33,14 @@ As seguintes tecnologias estão sendo utilizadas para o desenvolvimento do siste
 
 ## Estilo de Arquitetura
 
-O sistema utiliza uma Arquitetura em Camadas em um monólito moderno Laravel com Inertia, onde o frontend e backend com linguagens diferentes permanecem na mesma aplicação e no mesmo servidor, garantindo uma clara separação de responsabilidades. Camadas do sistema:
+O sistema utiliza uma Arquitetura em Camadas em um monólito moderno Laravel com Inertia, onde o frontend e backend em linguagens diferentes permanecem na mesma aplicação e no mesmo servidor, garantindo uma clara separação de responsabilidades. Camadas do sistema:
 
 - **Camada de Apresentação**: Controllers + Views (Inertia/Vue.js)
 - **Camada de Negócio**: Services (regras de negócio)
 - **Camada de Acesso aos Dados**: Repositories
 - **Camada de Dominio**: Models
 
-Com a adição do processamento de arquivos em python, a arquitetura pode evoluie para um modelo Híbrido com elementos de Arquitetura Orientada a Serviços, onde o processamento atua como um serviço especializado e desacoplado para extração de dados.
+Com a adição do processamento de arquivos em python, a arquitetura pode evoluir para um modelo Híbrido com elementos de Arquitetura Orientada a Serviços, onde o processamento atua como um serviço especializado e desacoplado para extração de dados.
 
 ### Diagrama de Pacotes Representando a Arquitetura da Aplicação:
 
@@ -199,11 +199,11 @@ Siga os passos abaixo para configurar e rodar o projeto em sua máquina local.
     ```
     Abra o arquivo `.env` e, se necessário, ajuste as variáveis de ambiente (`DB_HOST`, `DB_PORT`, etc.). Os valores padrão já devem funcionar com a configuração do Docker.
 
-    Edite o `.env` com suas configurações de banco e defina uma senha:
+    Edite o `.env` com as configurações do banco (A porta já esta de acordo com a porta definida no compose.dev.yaml) e defina uma senha:
 
     ```env
     DB_CONNECTION=pgsql
-    DB_HOST=db
+    DB_HOST=postgres
     DB_PORT=5432
     DB_DATABASE=exemplo
     DB_USERNAME=exemplo
