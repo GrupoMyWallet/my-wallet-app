@@ -188,7 +188,7 @@ Siga os passos abaixo para configurar e rodar o projeto em sua máquina local.
 
 1.  **Clone o repositório:**
     ```bash
-    git clone https://github.com/DuduHenriqueMg/my-wallet-app.git
+    git clone https://github.com/GrupoMyWallet/my-wallet-app.git
     cd my-wallet-app
     ```
 
@@ -199,7 +199,7 @@ Siga os passos abaixo para configurar e rodar o projeto em sua máquina local.
     ```
     Abra o arquivo `.env` e, se necessário, ajuste as variáveis de ambiente (`DB_HOST`, `DB_PORT`, etc.). Os valores padrão já devem funcionar com a configuração do Docker.
 
-    Edite o `.env` com suas configurações de banco:
+    Edite o `.env` com suas configurações de banco e defina uma senha:
 
     ```env
     DB_CONNECTION=pgsql
@@ -219,49 +219,47 @@ Siga os passos abaixo para configurar e rodar o projeto em sua máquina local.
 #### 📌 Qual container usar para cada tarefa?
 
 - **php-fpm:** Apenas executa o Laravel junto com o Nginx. **Não usar para comandos CLI**.
-- **php-cli:** Este é o container onde você roda **todos os comandos Composer, Artisan e NPM**.
+- **workspace:** Este é o container onde você roda **todos os comandos Composer, Artisan e NPM**.
 
-4.  **Instale as dependências do PHP (Composer):**
-    Execute o comando de dentro do contêiner `php-cli`.
+4.  **Entre no container workspace:**
+    Execute um desses comandos para entrar no container `workspace`.
     ```bash
-    docker compose -f compose.dev.yaml exec php-cli composer install
-    ```
-
-5.  **Instale as dependências JS (NPM):**
-    ```bash
-    docker compose -f compose.dev.yaml exec php-cli npm install
-    ```
-
-6.  **Gere a chave da aplicação Laravel:**
-    ```bash
-    docker compose -f compose.dev.yaml exec php-cli php artisan key:generate
-    ```
-
-7.  **Execute as migrações e seeders do banco de dados:**
-    Isso criará as tabelas e populará o banco com dados iniciais.
-    ```bash
-    docker compose -f compose.dev.yaml exec php-cli php artisan migrate --seed
-    ```
-
-8.  **Inicie o servidor de desenvolvimento do Vite:**
-    Este comando compila os assets do frontend e os mantém atualizados com o Hot Module Replacement (HMR).
-    ```bash
-    docker compose -f compose.dev.yaml exec php-cli npm run dev -- --host
-    ```
-
-    Se necessário, ajuste no `.env`:
-
-    ```env
-    VITE_HOST=0.0.0.0
-    ```
-
-8.  **Acessando o container:**
-    Estes comandos acessam o terminal do container.
-    ```bash
-    docker compose -f compose.dev.yaml exec -it php-cli bash
+    docker compose -f compose.dev.yaml exec -it workspace bash
     ```
     ```sh
-    docker compose -f compose.dev.yaml exec -it php-cli sh
+    docker compose -f compose.dev.yaml exec -it workspace sh
+    ```
+
+5.  **Dentro do container, instale as dependências JS (NPM):**
+    ```bash
+    npm install
+    ```
+
+6.  **Dentro do container, instale as dependências PHP (Composer):**
+    ```bash
+    composer install
+    ```
+
+7.  **Gere a chave da aplicação Laravel:**
+    ```bash
+    php artisan key:generate
+    ```
+
+8.  **Execute as migrações e seeders do banco de dados:**
+    Isso criará as tabelas e populará o banco com dados iniciais.
+    ```bash
+    php artisan migrate --seed
+    ```
+
+8.  **Rode a aplicação:**
+    Este comando roda a aplicação.
+    ```bash
+    composer run dev
+    ```
+
+    Para rodar em background, rode o comando abaixo fora do container e dentro da pasta do projeto:
+     ```bash
+    docker compose exec -d workspace composer run dev
     ```
 
 **Pronto!** Agora você pode acessar a aplicação em [http://localhost:8000](http://localhost:8000) (ou a porta que você definiu no .env em `APP_URL`).
