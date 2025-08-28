@@ -111,10 +111,10 @@ return [
     'not_regex'              => 'O formato do valor :attribute é inválido.',
     'numeric'                => 'O campo :attribute deve conter um valor numérico.',
     'password'               => [
-        'letters'       => 'A :attribute deve conter pelo menos uma letra.',
-        'mixed'         => 'A :attribute deve conter pelo menos uma letra maiúscula e uma minúscula.',
-        'numbers'       => 'A :attribute deve conter pelo menos um número.',
-        'symbols'       => 'A :attribute deve conter pelo menos um símbolo.',
+        'letters'       => 'O :attribute deve conter pelo menos uma letra.',
+        'mixed'         => 'O :attribute deve conter pelo menos uma letra maiúscula e uma minúscula.',
+        'numbers'       => 'O :attribute deve conter pelo menos um número.',
+        'symbols'       => 'O :attribute deve conter pelo menos um símbolo.',
         'uncompromised' => 'O dado :attribute apareceu em um vazamento de dados. Por favor, escolha um :attribute diferente.',
     ],
     'present'                => 'O campo :attribute deve estar presente.',
@@ -155,6 +155,7 @@ return [
     'uppercase'              => 'O :attribute deve ser maiúsculo.',
     'url'                    => 'O formato da URL informada para o campo :attribute é inválido.',
     'uuid'                   => 'O campo :attribute deve ser um UUID válido.',
+
     'attributes'             => [
         'address'                  => 'endereço',
         'affiliate_url'            => 'URL de afiliado',
