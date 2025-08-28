@@ -1,6 +1,6 @@
 services:
   web:
-    image: ghcr.io/duduhenriquemg/my-wallet-app/web:latest
+    image: ghcr.io/grupomywallet/my-wallet-app/web:latest
     restart: unless-stopped
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
@@ -17,7 +17,7 @@ services:
 
   php-fpm:
     
-    image: ghcr.io/duduhenriquemg/my-wallet-app/php-fpm:latest
+    image: ghcr.io/grupomywallet/my-wallet-app/php-fpm:latest
     restart: unless-stopped
     volumes:
       - mywallet-storage-production:/var/www/storage 
@@ -34,7 +34,7 @@ services:
       postgres:
         condition: service_healthy
   php-cli:
-    image: ghcr.io/duduhenriquemg/my-wallet-app/php-cli:latest
+    image: ghcr.io/grupomywallet/my-wallet-app/php-cli:latest
     tty: true 
     stdin_open: true 
     env_file:
