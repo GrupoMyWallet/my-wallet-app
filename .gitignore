@@ -98,3 +98,4 @@ certbot.log
 
 # Arquivos
 *.csv
+*.xlsx
