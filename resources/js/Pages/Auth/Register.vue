@@ -1,5 +1,7 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref, computed } from 'vue'; 
+import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import Checkbox from '@/Components/Checkbox.vue';
@@ -22,6 +24,41 @@ const submit = () => {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
+
+
+
+// ADICIONE ESTE BLOCO DE CÓDIGO AQUI
+const showPassword = ref(false);
+const showPasswordConfirmation = ref(false);
+
+const passwordFieldType = computed(() =>
+    showPassword.value ? 'text' : 'password'
+);
+
+const passwordConfirmationFieldType = computed(() =>
+    showPasswordConfirmation.value ? 'text' : 'password'
+);
+
+const togglePasswordVisibility = () => {
+    showPassword.value = !showPassword.value;
+};
+
+const togglePasswordConfirmationVisibility = () => {
+    showPasswordConfirmation.value = !showPasswordConfirmation.value;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 </script>
 
 <template>
@@ -61,30 +98,49 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Senha" />
-                <TextInput
-                    id="password"
-                    v-model="form.password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    required
-                    autocomplete="new-password"
-                />
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
-
+    <InputLabel for="password" value="Senha" />
+    <div class="relative">
+        <TextInput
+            id="password"
+            v-model="form.password"
+            :type="passwordFieldType"
+            class="mt-1 block w-full pr-10"
+            required
+            autocomplete="new-password"
+        />
+        <InputError class="mt-2" :message="form.errors.password" />
+        <button
+            type="button"
+            @click="togglePasswordVisibility"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        >
+            <EyeSlashIcon v-if="passwordFieldType === 'password'" class="w-5 h-5" />
+            <EyeIcon v-else class="w-5 h-5" />
+        </button>
+    </div>
+</div>
             <div class="mt-4">
-                <InputLabel for="password_confirmation" value="Confirmar Senha" />
-                <TextInput
-                    id="password_confirmation"
-                    v-model="form.password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
-                    required
-                    autocomplete="new-password"
-                />
-                <InputError class="mt-2" :message="form.errors.password_confirmation" />
-            </div>
+    <InputLabel for="password_confirmation" value="Confirmar Senha" />
+    <div class="relative">
+        <TextInput
+            id="password_confirmation"
+            v-model="form.password_confirmation"
+            :type="passwordConfirmationFieldType"
+            class="mt-1 block w-full pr-10"
+            required
+            autocomplete="new-password"
+        />
+        <InputError class="mt-2" :message="form.errors.password_confirmation" />
+        <button
+            type="button"
+            @click="togglePasswordConfirmationVisibility"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        >
+            <EyeSlashIcon v-if="passwordConfirmationFieldType === 'password'" class="w-5 h-5" />
+            <EyeIcon v-else class="w-5 h-5" />
+        </button>
+    </div>
+</div>
 
             <div v-if="$page.props.jetstream.hasTermsAndPrivacyPolicyFeature" class="mt-4">
                 <InputLabel for="terms">
