@@ -7,7 +7,6 @@ use App\Http\Requests\UpdateLancamentoRequest;
 use App\Models\Categoria;
 use App\Repositories\CategoriaRepository;
 use App\Repositories\LancamentoRepository;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -60,20 +59,11 @@ class LancamentoController extends Controller
 
     public function store(StoreLancamentoRequest $request)
     {
+    $validated = $request->validated();
 
-        $lancamentos_validados = $request->validated();
-
-        $lancamentos = array_map(function ($lancamento) {
-            $lancamento['user_id'] = auth()->id();
-            $lancamento['created_at'] = now();
-            $lancamento['updated_at'] = now();
-            $lancamento['data'] = Carbon::createFromFormat('d/m/Y', $lancamento['data'])->format('Y-m-d');
-            $lancamento['fim_da_recorrencia'] ? $lancamento['fim_da_recorrencia'] = Carbon::createFromFormat('d/m/Y', $lancamento['fim_da_recorrencia'])->format('Y-m-d') : null;
-
-            return $lancamento;
-        }, $lancamentos_validados['lancamentos']);
-
-        $this->lancamentoRepository->insert($lancamentos);
+    // Use relation so mutators (date normalization) run per model.
+    $user = $request->user();
+    $user->lancamentos()->createMany($validated['lancamentos']);
 
         return redirect()->route('lancamentos.index')->with('success', 'Lançamentos registrados com sucesso!');
     }
@@ -81,11 +71,9 @@ class LancamentoController extends Controller
     public function update(UpdateLancamentoRequest $request, $id)
     {
         try {
-            $lancamento = $request->validated();
-            $lancamento['data'] = Carbon::createFromFormat('d/m/Y', $lancamento['data'])->format('Y-m-d');
-            $lancamento['fim_da_recorrencia'] ? $lancamento['fim_da_recorrencia'] = Carbon::createFromFormat('d/m/Y', $lancamento['fim_da_recorrencia'])->format('Y-m-d') : null;
-            
-            $this->lancamentoRepository->update($id, $lancamento);
+            $dados = $request->validated(); // Mutators on model will handle date formats
+
+            $this->lancamentoRepository->update($id, $dados);
 
             return redirect()->route('lancamentos.index')->with('success', 'Lançamento atualizado com sucesso!');
         } catch (\Illuminate\Validation\ValidationException $e) {
