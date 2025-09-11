@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class LancamentoRepository
 {
+    /** @var Lancamento */
     protected $model;
 
     public function __construct(Lancamento $lancamento)
@@ -96,7 +97,15 @@ class LancamentoRepository
 
     public function insert(array $data)
     {
-        return $this->model->insert($data);
+        // Ensure timestamps if not provided (bulk insert bypasses them otherwise)
+        $now = Carbon::now();
+        foreach ($data as &$row) {
+            $row['created_at'] = $row['created_at'] ?? $now;
+            $row['updated_at'] = $row['updated_at'] ?? $now;
+        }
+        unset($row);
+
+        return Lancamento::query()->insert($data);
     }
 
     public function update(int $id, array $data)

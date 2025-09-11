@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Carbon\Carbon;
 
 class Lancamento extends Model
 {
@@ -25,7 +26,47 @@ class Lancamento extends Model
         'fim_da_recorrencia' => 'date:d/m/Y',
         'valor' => 'decimal:2',
         'esta_ativa' => 'boolean',
+    'intervalo_meses' => 'integer',
     ];
+
+    /*
+     * Mutators to accept both d/m/Y and Y-m-d (or DateTime) on assignment while
+     * keeping simple date formatting via casts when reading.
+     */
+    public function setDataAttribute($value): void
+    {
+        if ($value instanceof \DateTimeInterface) {
+            $this->attributes['data'] = $value;
+            return;
+        }
+
+        if (is_string($value) && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $value)) {
+            $this->attributes['data'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
+            return;
+        }
+
+        $this->attributes['data'] = $value; // Assume already in correct format
+    }
+
+    public function setFimDaRecorrenciaAttribute($value): void
+    {
+        if (empty($value)) {
+            $this->attributes['fim_da_recorrencia'] = null;
+            return;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            $this->attributes['fim_da_recorrencia'] = $value;
+            return;
+        }
+
+        if (is_string($value) && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $value)) {
+            $this->attributes['fim_da_recorrencia'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
+            return;
+        }
+
+        $this->attributes['fim_da_recorrencia'] = $value;
+    }
 
     public function isDespesa()
     {
@@ -50,6 +91,29 @@ class Lancamento extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /*
+     * Query scopes
+     */
+    public function scopeDoUsuario($query, int $userId)
+    {
+        return $query->where('user_id', $userId);
+    }
+
+    public function scopeAno($query, int $ano)
+    {
+        return $query->whereYear('data', $ano);
+    }
+
+    public function scopeMes($query, int $mes)
+    {
+        return $query->whereMonth('data', $mes);
+    }
+
+    public function scopeTipo($query, string $tipo)
+    {
+        return $query->where('tipo', $tipo);
     }
 
     public static function rules()
