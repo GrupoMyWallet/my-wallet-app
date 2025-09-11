@@ -14,7 +14,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copia requirements (melhor ter um requirements.txt gerado)
-COPY api/requirements.txt ./requirements.txt
+COPY requirements.txt ./requirements.txt
 
 # Cria ambiente virtual para reduzir tamanho em runtime
 ENV VIRTUAL_ENV=/opt/venv
