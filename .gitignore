@@ -1,26 +1,101 @@
-/.phpunit.cache
+# ======================================
+# Python
+# ======================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# Banco de dados local / SQLite
+*.db
+*.sqlite3
+
+# Distribuição / pacotes
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testes e cache
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Ambiente virtual
+.venv/
+venv/
+ENV/
+env/
+
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# ======================================
+# IDEs / Editores
+# ======================================
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+*.sublime-project
+*.sublime-workspace
+
+# JetBrains Fleet
+.fleet/
+
+# Zed
+.zed/
+
+# ======================================
+# Sistema Operacional
+# ======================================
+.DS_Store
+Thumbs.db
+
+
 /node_modules
+/vendor
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
-/vendor
-.env
-.env.backup
-.env.production
+
+# Laravel / PHP específicos
+/.phpunit.cache
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
+/auth.json
+
+# Arquivos de ambiente
+.env
+.env.backup
+.env.production
+
+# Outras ferramentas
+/.nova
 npm-debug.log
 yarn-error.log
-/auth.json
-/.fleet
-/.idea
-/.nova
-/.vscode
-/.zed
+
+# Certbot (SSL)
 certbot/
 certbot.conf
 certbot.log
+
+# Arquivos
+*.csv
+*.xlsx
