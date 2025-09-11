@@ -79,12 +79,23 @@ services:
       timeout: 10s
       retries: 3
 
+    python-api:
+        image: ghcr.io/<usuario>/<repo>/python-api:latest
+        container_name: mywallet_python_api
+        restart: unless-stopped
+        ports:
+         - "8000:8000"
+        networks:
+            - mywallet
+        depends_on:
+            - postgres
+
 networks:
   mywallet:
     driver: bridge
 
 volumes:
-  build-assets:  
+  build-assets:
     driver: local
   postgres-data:
     driver: local

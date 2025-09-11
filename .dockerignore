@@ -104,3 +104,11 @@ Homestead.yaml
 auth.json
 
 scripts/deploy.sh
+
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.log
+*.csv
+*.xlsx

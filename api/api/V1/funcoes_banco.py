@@ -19,7 +19,7 @@ def extrair_data_hora(detalhes: str) -> Optional[pd.Timestamp]:
 
         match = re.search(padrao_sem_ano, detalhes)
         if match:
-            # Se não tem ano, adiciona o ano atual
+            # Se não tem ano, adiciona o ano atualS
             data_str = match.group(1) + f"/{datetime.now().year} " + match.group(2)
             return pd.to_datetime(data_str, format="%d/%m/%Y %H:%M")
 
