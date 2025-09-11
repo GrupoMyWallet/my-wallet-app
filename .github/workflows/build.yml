@@ -65,3 +65,16 @@ jobs:
           tags: ghcr.io/${{ steps.repo.outputs.repository }}/php-cli:latest
           cache-from: type=registry,ref=ghcr.io/${{ steps.repo.outputs.repository }}/php-cli:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ steps.repo.outputs.repository }}/php-cli:buildcache,mode=max
+
+      - name: Build and push API (python) image
+        uses: docker/build-push-action@v5
+        with:
+          # contexto na pasta api (Dockerfile está em api/Dockerfile)
+          context: ./api
+          file: ./api/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ steps.repo.outputs.repository }}/api:latest
+            ghcr.io/${{ steps.repo.outputs.repository }}/api:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ steps.repo.outputs.repository }}/api:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ steps.repo.outputs.repository }}/api:buildcache,mode=max
