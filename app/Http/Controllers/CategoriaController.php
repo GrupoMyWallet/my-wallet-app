@@ -15,7 +15,8 @@ class CategoriaController extends Controller
     {
         $this->categoriaRepository = $categoriaRepository;
     }
-
+    
+    # Index que retorna a página principal de categorias
     public function index(Request $request)
     {
 
@@ -28,22 +29,33 @@ class CategoriaController extends Controller
         ]);
     }
 
+    # Método de criação de categoria no banco
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nome' => ['required', 'string', 'max:50'],
-            'tipo' => ['required', 'in:despesa,receita'],
-        ]);
+        try {
+            $validated = $request->validate([
+                'nome' => ['required', 'string', 'max:50'],
+                'tipo' => ['required', 'in:despesa,receita'],
+            ]);
 
-        Categoria::create([
-            'nome' => $validated['nome'],
-            'tipo' => $validated['tipo'],
-            'user_id' => $request->user()->id,
-        ]);
+            Categoria::create([
+                'nome' => $validated['nome'],
+                'tipo' => $validated['tipo'],
+                'user_id' => $request->user()->id,
+            ]);
 
-        return redirect()->route('categorias.index')->with('success', 'Categoria cadastrada com sucesso!');
+            return redirect()->route('categorias.index')->with('success', 'Categoria cadastrada com sucesso!');
+
+        }  catch (\Illuminate\Validation\ValidationException $e) {
+
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+
+            return redirect()->route('categorias.index')->with('error', 'Não foi possível criar a categoria. Tente novamente mais tarde.');
+        }
     }
 
+    # Método de update de categoria no banco
     public function update(Request $request, $id)
     {
         try {
@@ -65,6 +77,7 @@ class CategoriaController extends Controller
 
     }
 
+    # Método de apagar categoria do banco
     public function destroy($id)
     {
         try {
@@ -73,8 +86,6 @@ class CategoriaController extends Controller
 
             return redirect()->route('categorias.index')->with('success', 'Categoria excluída com sucesso!');
         } catch (\Exception $e) {
-            // Você pode logar o erro se quiser
-            // \Log::error("Erro ao excluir categoria: " . $e->getMessage());
 
             return redirect()->route('categorias.index')->with('error', 'Não foi possível excluir a Categoria. Tente novamente mais tarde.');
         }
