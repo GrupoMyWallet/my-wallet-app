@@ -1,6 +1,10 @@
 <script setup>
 import { Link, Head } from '@inertiajs/vue3';
 import MyWalletLogo from '@/Components/MyWalletLogo.vue';
+import { useDark, useToggle } from "@vueuse/core";
+
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
 
 
 defineProps({

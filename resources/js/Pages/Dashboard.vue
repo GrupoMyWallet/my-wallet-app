@@ -13,6 +13,7 @@ import {
   Legend
 } from 'chart.js'
 import { Bar } from 'vue-chartjs'
+import { useDark } from "@vueuse/core";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
