@@ -61,11 +61,18 @@ const closeModal = () => {
             <!-- Delete Account Confirmation Modal -->
             <DialogModal :show="confirmingUserDeletion" @close="closeModal">
                 <template #title>
-                    Delete Account
+                    Deletetar conta 
                 </template>
 
-                <template #content>
-                    Tem certeza que quer excluir sua conta? Depois que sua conta for excluída, todos os dados também serão permanentemente excluídos. Coloque sua senha para confirmar a exxclusão de sua conta.
+            <template #content>
+                    <div class="text-red-600 font-bold">
+                        ⚠️ Atenção: Esta ação é irreversível!
+                    </div>
+
+                    <div class="mt-2 text-gray-600">
+                        Depois que sua conta for excluída, todos os seus dados (lançamentos,
+                        orçamentos, metas e categorias) serão apagados <strong>permanentemente</strong>.
+                    </div>
 
                     <div class="mt-4">
                         <TextInput
@@ -73,7 +80,7 @@ const closeModal = () => {
                             v-model="form.password"
                             type="password"
                             class="mt-1 block w-3/4"
-                            placeholder="Password"
+                            placeholder="Digite sua senha"
                             autocomplete="current-password"
                             @keyup.enter="deleteUser"
                         />
