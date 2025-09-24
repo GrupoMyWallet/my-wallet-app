@@ -16,6 +16,5 @@ class DeleteUser implements DeletesUsers
         $user->metas()->delete();
         $user->categorias()->delete();
         $user->delete();
-        /* $user->update(['active' => false]); - lógica futura para desativar conta*/
     }
 }
