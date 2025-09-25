@@ -86,7 +86,7 @@ function updateIntervaloMeses(lancamento) {
 </script>
 
 <template>
-    <AppLayout title="Lançamentos">
+    <AppLayout title="Lançamentos de Receitas e Despesas">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Registrar lançamentos
