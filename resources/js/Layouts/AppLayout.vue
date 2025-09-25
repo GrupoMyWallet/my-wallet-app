@@ -7,6 +7,11 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import MyWalletLogo from '@/Components/MyWalletLogo.vue';
 
+import { useDark, useToggle } from "@vueuse/core";
+
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
+
 // Props
 defineProps({
     title: String,
@@ -47,10 +52,10 @@ const logout = () => {
                 @click="sidebarOpen = false" />
         </transition>
 
-        <div class="flex h-screen bg-gray-100 overflow-hidden">
+        <div class="flex h-screen bg-gray-100 dark:bg-slate-900 overflow-hidden">
             <!-- Sidebar -->
             <aside :class="[
-                'flex flex-col w-72 max-w-full h-screen bg-white shadow-xl fixed md:static z-40 transition-all duration-300',
+                'flex flex-col w-72 max-w-full h-screen bg-white dark:bg-slate-900 shadow-xl fixed md:static z-40 transition-all duration-300',
                 sidebarOpen ? 'left-0' : '-left-80 md:left-0'
             ]">
                 <!-- Top (Logo e título) -->
@@ -68,6 +73,9 @@ const logout = () => {
                 <!-- Navegação principal -->
                 <nav class="flex-1 overflow-y-auto px-4 py-6">
                     <ul class="space-y-2">
+                        <li>
+                            <button class="bg-black dark:bg-white text-white hover:bg-slate-500 dark:bg-black w7 h7" @click="toggleDark()">T</button>
+                        </li>
                         <li>
                             <NavLink :href="route('dashboard')" :active="route().current('dashboard')" class="w-full">
                                 <span class="flex items-center gap-3 py-2 px-3 rounded-xl">

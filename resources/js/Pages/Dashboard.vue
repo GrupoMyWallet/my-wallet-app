@@ -13,7 +13,10 @@ import {
   Legend
 } from 'chart.js'
 import { Bar } from 'vue-chartjs'
-import { useDark } from "@vueuse/core";
+import { useDark, useToggle } from "@vueuse/core";
+
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
@@ -313,12 +316,12 @@ onMounted(() => {
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
       <!-- Filtros -->
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+      <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
         <div class="p-6 border-b border-gray-200">
-          <h2 class="text-xl font-semibold mb-4">Filtros</h2>
+          <h2 class="text-xl font-semibold mb-4 text-current dark:text-white">Filtros</h2>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Ano</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-400">Ano</label>
               <select v-model="filters.ano" @change="updateDashboard"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 <option v-for="year in availableYears" :key="year" :value="year">
@@ -328,7 +331,7 @@ onMounted(() => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Mês</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-400">Mês</label>
               <select v-model="filters.mes" @change="updateDashboard"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 <option :value="null">Todos os meses</option>
@@ -339,7 +342,7 @@ onMounted(() => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Categoria</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-400">Categoria</label>
               <select v-model="filters.categoria_id" @change="updateDashboard"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 <option :value="null">Todas as categorias</option>
@@ -380,9 +383,9 @@ onMounted(() => {
         <!-- Resumos -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <!-- Resumo Anual -->
-          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+          <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
-              <h3 class="text-lg font-semibold mb-4 text-gray-800">
+              <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-slate-200">
                 <i class="fas fa-calendar-alt mr-2 text-indigo-500"></i>
                 Resumo Anual {{ filters.ano }}
               </h3>
@@ -466,9 +469,9 @@ onMounted(() => {
         <!-- Gráficos -->
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <!-- Gráfico Receitas vs Despesas -->
-          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+          <div class="bg-white dark:bg-slate-900 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
-              <h3 class="text-lg font-semibold mb-4 text-gray-800">
+              <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-slate-200">
                 <i class="fas fa-chart-bar mr-2 text-purple-500"></i>
                 Receitas vs Despesas {{ filters.ano }}
               </h3>
@@ -488,14 +491,14 @@ onMounted(() => {
           <!-- Gráfico Orçamento vs Categoria -->
           <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
-              <h3 class="text-lg font-semibold mb-4 text-gray-800">
+              <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-slate-200">
                 <i class="fas fa-chart-line mr-2 text-orange-500"></i>
                 Orçamento vs Despesas por Categoria
               </h3>
               <div class="h-80">
                 <Bar v-if="orcamentoCategoriaChartData && orcamentoCategoriaChartData.labels.length > 0"
                   :data="orcamentoCategoriaChartData" :options="orcamentoCategoriaChartOptions" />
-                <div v-else class="flex items-center justify-center h-full text-gray-500">
+                <div v-else class="flex items-center justify-center h-full text-gray-500 dark:text-slate-500">
                   <div class="text-center">
                     <i class="fas fa-chart-line text-4xl mb-2"></i>
                     <p>Nenhum orçamento configurado</p>
@@ -505,9 +508,9 @@ onMounted(() => {
 
               <!-- Tabela de detalhes do orçamento -->
               <div v-if="dashboard.grafico_orcamento_categoria?.dados?.length > 0" class="mt-6">
-                <h4 class="text-md font-semibold mb-3 text-gray-700">Detalhes por Categoria</h4>
+                <h4 class="text-md font-semibold mb-3 text-gray-700 dark:text-slate-300">Detalhes por Categoria</h4>
                 <div class="overflow-x-auto">
-                  <table class="min-w-full divide-y divide-gray-200">
+                  <table class="min-w-full divide-y divide-gray-200 divide-slate-200">
                     <thead class="bg-gray-50">
                       <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -520,13 +523,13 @@ onMounted(() => {
                         </th>
                       </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white dark:bg-slate-900 divide-y divide-gray-200">
                       <tr v-for="item in dashboard.grafico_orcamento_categoria.dados" :key="item.categoria">
                         <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.categoria }}
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(item.orcado) }}
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100">{{ formatCurrency(item.orcado) }}
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(item.gasto) }}
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100">{{ formatCurrency(item.gasto) }}
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm">
                           <span :class="getPercentualClass(item.percentual)"
