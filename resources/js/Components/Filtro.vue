@@ -17,15 +17,15 @@ function onReset() {
 </script>
 
 <template>
-  <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-    <div class="p-6 border-b border-gray-200">
-      <h2 class="text-xl font-semibold mb-4">Filtros</h2>
+  <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+    <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+      <h2 class="text-xl font-semibold mb-4 dark:text-slate-200">Filtros</h2>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <slot :onChange="onChange" />
         <div class="flex items-end">
           <button 
             @click="onReset" 
-            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+            class="bg-gray-500 dark:bg-slate-600 hover:bg-gray-700 dark:hover:bg-slate-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
             :disabled="loading"
           >
             <span v-if="loading" class="inline-flex items-center">

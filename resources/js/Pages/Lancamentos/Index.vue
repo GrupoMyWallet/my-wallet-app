@@ -182,7 +182,7 @@ const deleteItem = () => {
 <template>
     <AppLayout title="Lançamentos">
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-slate-200 leading-tight">
                 Lançamentos
             </h2>
         </template>
@@ -194,9 +194,9 @@ const deleteItem = () => {
             <Filtro :loading="loading" @update="aplicarFiltros" @reset="resetFilters">
                 <template #default="{ onChange }">
                     <div>
-                    <label class="block text-sm font-medium text-gray-700">Ano</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-400">Ano</label>
                     <select v-model="filtros.ano" @change="onChange" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white">
                         <option value="">Todos os anos</option>
                         <option v-for="year in availableYears" :key="year" :value="year">
                         {{ year }}
@@ -205,17 +205,17 @@ const deleteItem = () => {
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mês</label>
-                        <select v-model="filtros.mes" @change="onChange" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-400 mb-1">Mês</label>
+                        <select v-model="filtros.mes" @change="onChange" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white">
                         <option value="">Todos os meses</option>
                         <option v-for="(nome, numero) in meses" :key="numero" :value="numero">{{ nome }}</option>
                         </select>
                     </div>
 
                     <div>
-                    <label class="block text-sm font-medium text-gray-700">Categoria</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-400">Categoria</label>
                     <select v-model="filtros.categoria_id" @change="onChange"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white">
                         <option value="">Todas as categorias</option>
                         <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">
                         {{ categoria.nome }}
@@ -226,14 +226,14 @@ const deleteItem = () => {
             </Filtro>
 
             <div class="flex justify-end gap-4 m-6">
-                <Link :href="route('lancamentos.create')" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 transition">
+                <Link :href="route('lancamentos.create')" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 transition dark:bg-blue-700 dark:hover:bg-blue-800">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     Novo Lançamento
                 </Link>
 
-                <Link :href="route('lancamentos.import')" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-green-600 text-white font-semibold shadow-md hover:bg-green-700 transition">
+                <Link :href="route('lancamentos.import')" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-green-600 text-white font-semibold shadow-md hover:bg-green-700 transition dark:bg-green-700 dark:hover:bg-green-800">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16h16M4 4l16 16" />
                     </svg>
@@ -250,7 +250,7 @@ const deleteItem = () => {
         <Modal :show="showModalEdit" @close="() => closeModal('edit')">
             <template #default>
                 <div class="p-6">
-                    <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-slate-200 flex items-center gap-2">
                         <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -264,7 +264,7 @@ const deleteItem = () => {
                             <div>
                                 <InputLabel for="edit-tipo" value="Tipo" :required="true" />
                                 <select v-model="form.item.tipo" id="edit-tipo"
-                                    class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                    class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                     required>
                                     <option value="" disabled>Selecione...</option>
                                     <option value="despesa">Despesa</option>
@@ -314,7 +314,7 @@ const deleteItem = () => {
                                     v-model="form.item.selected_interval_option"
                                     id="edit-selected_interval_option"
                                     @change="handleIntervalOptionChange"
-                                    class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                    class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                     required>
                                     <option value="0">Sem Recorrência</option>
                                     <option value="1">Mensal (1 mês)</option>
@@ -352,7 +352,7 @@ const deleteItem = () => {
                             <!-- Esta Ativa -->
                             <div class="flex items-center mt-4 md:col-span-2">
                                 <input id="edit-esta_ativa" v-model="form.item.esta_ativa" type="checkbox"
-                                    class="h-5 w-5 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm m-1 block" />
+                                    class="h-5 w-5 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm m-1 block dark:bg-slate-700 dark:border-slate-600" />
                                 <InputLabel for="edit-esta_ativa" value="Está ativa?" class="ml-2 mb-0" />
                                 <InputError class="mt-2" :message="form.errors.esta_ativa" />
                             </div>
@@ -360,11 +360,11 @@ const deleteItem = () => {
                         <!-- Botões -->
                         <div class="mt-8 flex justify-end gap-3">
                             <button type="button" @click="() => closeModal('edit')"
-                                class="px-5 py-2 rounded-xl bg-gray-200 text-gray-800 hover:bg-gray-300 font-semibold transition">
+                                class="px-5 py-2 rounded-xl bg-gray-200 text-gray-800 hover:bg-gray-300 font-semibold transition dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-500">
                                 Cancelar
                             </button>
                             <button type="submit" :disabled="form.processing"
-                                class="px-6 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition">
+                                class="px-6 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition dark:bg-blue-700 dark:hover:bg-blue-800">
                                 Salvar Alterações
                             </button>
                         </div>
@@ -376,19 +376,19 @@ const deleteItem = () => {
         <Modal :show="showModalDelete" @close="() => closeModal('delete')">
             <template #default>
                 <div class="p-6">
-                    <h3 class="text-lg font-bold mb-4 text-red-600">Confirmar Exclusão</h3>
-                    <p class="mb-6">
+                    <h3 class="text-lg font-bold mb-4 text-red-600 dark:text-red-400">Confirmar Exclusão</h3>
+                    <p class="mb-6 dark:text-slate-300">
                         Tem certeza que deseja excluir 
-                        <strong>"{{ form.item?.descricao || 'este item' }}"</strong>?
+                        <strong class="dark:text-slate-100">"{{ form.item?.descricao || 'este item' }}"</strong>?
                         Esta ação não pode ser desfeita.
                     </p>
                     <div class="flex justify-end gap-3">
                         <button type="button" @click="() => closeModal('delete')"
-                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-500">
                             Cancelar
                         </button>
                         <button @click="deleteItem" 
-                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition dark:bg-red-700 dark:hover:bg-red-800">
                             Excluir Lançamento
                         </button>
                     </div>

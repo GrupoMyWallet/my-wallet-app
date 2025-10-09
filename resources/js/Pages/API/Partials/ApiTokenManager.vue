@@ -181,7 +181,7 @@ const deleteApiToken = () => {
                     Please copy your new API token. For your security, it won't be shown again.
                 </div>
 
-                <div v-if="$page.props.jetstream.flash.token" class="mt-4 bg-gray-100 px-4 py-2 rounded font-mono text-sm text-gray-500 break-all">
+                <div v-if="$page.props.jetstream.flash.token" class="mt-4 bg-gray-100 dark:bg-slate-1000 px-4 py-2 rounded font-mono text-sm text-gray-500 dark:text-slate-600 break-all">
                     {{ $page.props.jetstream.flash.token }}
                 </div>
             </template>
@@ -204,7 +204,7 @@ const deleteApiToken = () => {
                     <div v-for="permission in availablePermissions" :key="permission">
                         <label class="flex items-center">
                             <Checkbox v-model:checked="updateApiTokenForm.permissions" :value="permission" />
-                            <span class="ms-2 text-sm text-gray-600">{{ permission }}</span>
+                            <span class="ms-2 text-sm text-gray-600 dark:text-slate-500">{{ permission }}</span>
                         </label>
                     </div>
                 </div>

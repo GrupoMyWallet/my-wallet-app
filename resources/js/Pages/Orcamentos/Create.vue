@@ -58,22 +58,22 @@ function submit() {
 
     <AppLayout title="Metas">
         <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl font-bold text-gray-800">Cadastrar Orçamento</h2>
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-200">Cadastrar Orçamento</h2>
             <button
                 type="button"
                 @click="$inertia.visit(route('categorias.index'))"
-                class="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-gray-600 font-medium shadow-sm transition"
+                class="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 rounded-xl text-gray-600 dark:text-slate-300 font-medium shadow-sm transition"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 Voltar
             </button>
         </div>
 
-        <div class="max-w-xl mx-auto bg-white rounded-2xl shadow p-8 space-y-6">
+        <div class="max-w-xl mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow p-8 space-y-6">
                 <form @submit.prevent="submit" class="space-y-6">
                     <div>
                         <InputLabel for="categoria_id" value="Categoria" :required="true" />
-                        <SelectInput v-model="form.categoria_id" :disabled="!!categoria_selecionada">
+                        <SelectInput v-model="form.categoria_id" :disabled="!!categoria_selecionada" class="dark:bg-slate-700 dark:border-slate-600 dark:text-white">
                             <option v-for="categoria in categorias" :value="categoria.id" :key="categoria.id">{{ categoria.nome }}</option>
                         </SelectInput>
                         <InputError class="mt-2" :message="form.errors.categoria_id" />
@@ -82,7 +82,7 @@ function submit() {
 
                     <div>
                         <InputLabel for="tipo" value="Tipos de Orçamento" :required="true" />
-                        <SelectInput v-model="form.tipo">
+                        <SelectInput v-model="form.tipo" class="dark:bg-slate-700 dark:border-slate-600 dark:text-white">
                             <option value="">Selecione</option>
                             <option v-for="tipo in tiposOrcamento" :value="tipo.value" :key="tipo.value">{{ tipo.label }}</option>
                         </SelectInput>
@@ -119,7 +119,7 @@ function submit() {
                         </div>
                         <div v-if="exibirCampoMes">
                             <InputLabel for="mes" value="Mês" :required="true" />
-                            <SelectInput v-model="form.mes">
+                            <SelectInput v-model="form.mes" class="dark:bg-slate-700 dark:border-slate-600 dark:text-white">
                                 <option value="">Selecione</option>
                                 <option v-for="mes in meses" :key="mes.valor" :value="mes.valor">
                                     {{ mes.nome }}
@@ -131,7 +131,7 @@ function submit() {
 
                     <div class="pt-2 flex gap-3">
                         <button type="submit"
-                            class="w-full flex justify-center items-center bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow transition disabled:opacity-50"
+                            class="w-full flex justify-center items-center bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-800 text-white font-bold py-3 rounded-xl shadow transition disabled:opacity-50"
                             :disabled="form.processing">
                             <span v-if="form.processing" class="animate-spin mr-2 w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span>
                             Salvar Orçamento
