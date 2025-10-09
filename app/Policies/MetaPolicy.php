@@ -4,20 +4,20 @@ namespace App\Policies;
 
 use App\Models\Meta;
 use App\Models\User;
-use App\Traits\HandlePropietario;
+use App\Traits\HandleProprietario;
 use Illuminate\Auth\Access\Response;
 
 class MetaPolicy
 {
 
-    use HandlePropietario;
+    use HandleProprietario;
 
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -33,7 +33,7 @@ class MetaPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -41,7 +41,7 @@ class MetaPolicy
      */
     public function update(User $user, Meta $meta): bool
     {
-        return $this->isOwner($user, $lancamento);
+        return $this->isOwner($user, $meta);
     }
 
     /**
@@ -49,7 +49,7 @@ class MetaPolicy
      */
     public function delete(User $user, Meta $meta): bool
     {
-        return $this->isOwner($user, $lancamento);
+        return $this->isOwner($user, $meta);
     }
 
     /**
@@ -57,7 +57,7 @@ class MetaPolicy
      */
     public function restore(User $user, Meta $meta): bool
     {
-        return $this->isOwner($user, $lancamento);
+        return $this->isOwner($user, $meta);
     }
 
     /**
@@ -65,6 +65,6 @@ class MetaPolicy
      */
     public function forceDelete(User $user, Meta $meta): bool
     {
-        return $this->isOwner($user, $lancamento);
+        return $this->isOwner($user, $meta);
     }
 }

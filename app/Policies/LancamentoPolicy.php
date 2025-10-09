@@ -4,12 +4,12 @@ namespace App\Policies;
 
 use App\Models\Lancamento;
 use App\Models\User;
-use App\Traits\HandlePropietario;
+use App\Traits\HandleProprietario;
 use Illuminate\Auth\Access\Response;
 
 class LancamentoPolicy
 {
-    use HandlePropietario;
+    use HandleProprietario;
 
     /**
      * Determine whether the user can view any models.
@@ -32,7 +32,7 @@ class LancamentoPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
