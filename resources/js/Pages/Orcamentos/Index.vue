@@ -34,8 +34,34 @@ const form = useForm({
   tipo: '',
   ano: new Date().getFullYear(),
   mes: '',
-  valor: ''
+  valor: ''  // string vazia, não 0
 })
+
+function formatarRealInput(event, fieldName, formRef) {
+  // Remove tudo que não é número
+  let valor = event.target.value.replace(/\D/g, '');
+
+  if (!valor) {
+    event.target.value = '';
+    formRef[fieldName] = '';
+    return;
+  }
+
+  // Divide por 100 para centavos
+  let valorNumerico = parseInt(valor) / 100;
+
+  // Atualiza o campo do form com valor numérico
+  formRef[fieldName] = valorNumerico;
+
+  // Formata para exibição
+  const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+  event.target.value = `R$ ${valorFormatado}`;
+}
+
 
 // Dados estáticos
 const meses = {
@@ -292,12 +318,11 @@ function onDelete(orcamento) {
                 <InputLabel for="valor" value="Valor" :required="true"/>
                 <TextInput
                   id="valor"
-                  v-mask-decimal
-                  placeholder="0.00"
-                  v-model="form.valor"
+                  placeholder="R$ 0,00"
+                  :value="form.valor ? `R$ ${form.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''"
                   class="mt-1 block w-full"
-                  step="0.01"
                   required
+                  @input="formatarRealInput($event, 'valor', form)"
                 />
                 <InputError class="mt-2" :message="form.errors.valor" />
               </div>

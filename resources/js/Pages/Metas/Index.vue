@@ -14,28 +14,52 @@ defineProps({
 });
 
 const form = useForm({
-    titulo: "",
-    descricao: "",
-    status: "andamento",
-    valor_atual: 0,
-    valor_a_alcancar: 0,
-    data_final: "",
+  titulo: "",
+  descricao: "",
+  status: "andamento",
+  valor_atual: "",
+  valor_a_alcancar: "",
+  data_final: "",
 });
 
 const editForm = useForm({
-    id: null,
-    titulo: "",
-    descricao: "",
-    status: "andamento",
-    valor_atual: 0,
-    valor_a_alcancar: 0,
-    data_final: "",
+  id: null,
+  titulo: "",
+  descricao: "",
+  status: "andamento",
+  valor_atual: "",
+  valor_a_alcancar: "",
+  data_final: "",
 });
 
 // Estados dos modais
 const showEditModal = ref(false);
 const showDeleteModal = ref(false);
 const metaToDelete = ref(null);
+
+function formatarReal(event, fieldName, formRef) {
+  let valor = event.target.value.replace(/\D/g, ""); // remove tudo que não é dígito
+
+  if (!valor) {
+    event.target.value = "";
+    formRef[fieldName] = "";
+    return;
+  }
+
+  // Divide por 100 para centavos
+  let valorNumerico = parseInt(valor) / 100;
+
+  // Atualiza o form com valor numérico
+  formRef[fieldName] = valorNumerico;
+
+  // Formata para exibição (pt-BR)
+  const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+  event.target.value = `R$ ${valorFormatado}`;
+}
 
 // Função para submit de nova meta
 function submit() {
@@ -231,32 +255,32 @@ function deleteMeta() {
                 </div>
 
                 <div>
-                    <InputLabel for="valor_a_alcancar" value="Valor a Alcançar" :required="true" />
-                    <TextInput  
-                        id="valor_a_alcancar" 
-                        type="text" 
-                        v-mask-decimal
-                        v-model="form.valor_a_alcancar" 
-                        class="mt-1 block w-full" 
-                        step="0.01"
-                        placeholder="00.00"
-                        required />
-                    <InputError class="mt-2" :message="form.errors.valor_a_alcancar" />
+                  <InputLabel for="valor_a_alcancar" value="Valor a Alcançar" :required="true" />
+                  <TextInput  
+                      id="valor_a_alcancar"
+                      type="text"
+                      :value="form.valor_a_alcancar ? `R$ ${form.valor_a_alcancar.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''"
+                      class="mt-1 block w-full"
+                      placeholder="R$ 0,00"
+                      @input="formatarReal($event, 'valor_a_alcancar', form)"
+                      required
+                  />
+                  <InputError class="mt-2" :message="form.errors.valor_a_alcancar" />
                 </div>
 
                 <div>
-                    <InputLabel for="valor_atual" value="Valor Atual" :required="true" />
-                    <TextInput  
-                        id="valor_atual" 
-                        type="text" 
-                        v-mask-decimal
-                        v-model="form.valor_atual" 
-                        class="mt-1 block w-full" 
-                        step="0.01"
-                        placeholder="00.00"
-                        required />
-                    <InputError class="mt-2" :message="form.errors.valor_atual" />
-                </div>
+                <InputLabel for="valor_atual" value="Valor Atual" :required="true" />
+                <TextInput  
+                    id="valor_atual"
+                    type="text"
+                    :value="form.valor_atual ? `R$ ${form.valor_atual.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''"
+                    class="mt-1 block w-full"
+                    placeholder="R$ 0,00"
+                    @input="formatarReal($event, 'valor_atual', form)"
+                    required
+                />
+                <InputError class="mt-2" :message="form.errors.valor_atual" />
+              </div>
 
                 <div>
                   <InputLabel for="data_final" value="Data Final"/>
@@ -322,11 +346,12 @@ function deleteMeta() {
                         <TextInput  
                             id="edit_valor_a_alcancar" 
                             type="text" 
-                            v-mask-decimal
-                            v-model="editForm.valor_a_alcancar" 
+                            :value="editForm.valor_a_alcancar ? `R$ ${editForm.valor_a_alcancar.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''"
                             class="mt-1 block w-full" 
-                            placeholder="00.00"
-                            required />
+                            placeholder="R$ 0,00"
+                            @input="formatarReal($event, 'valor_a_alcancar', editForm)"
+                            required 
+                        />
                         <InputError class="mt-2" :message="editForm.errors.valor_a_alcancar" />
                     </div>
 
@@ -335,11 +360,12 @@ function deleteMeta() {
                         <TextInput  
                             id="edit_valor_atual" 
                             type="text" 
-                            v-mask-decimal
-                            v-model="editForm.valor_atual" 
+                            :value="editForm.valor_atual ? `R$ ${editForm.valor_atual.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''"
                             class="mt-1 block w-full" 
-                            placeholder="00.00"
-                            required />
+                            placeholder="R$ 0,00"
+                            @input="formatarReal($event, 'valor_atual', editForm)"
+                            required 
+                        />
                         <InputError class="mt-2" :message="editForm.errors.valor_atual" />
                     </div>
 
