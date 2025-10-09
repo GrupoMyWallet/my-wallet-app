@@ -15,6 +15,32 @@ const form = useForm({
     lancamentos: [],
 });
 
+function formatarRealLancamento(event, lancamento, fieldName) {
+  // Pega apenas números
+  let valor = event.target.value.replace(/\D/g, '');
+
+  if (!valor) {
+    event.target.value = '';
+    lancamento[fieldName] = '';
+    return;
+  }
+
+  // Divide por 100 para centavos
+  let valorNumerico = parseInt(valor) / 100;
+
+  // Atualiza o v-model com número real
+  lancamento[fieldName] = valorNumerico;
+
+  // Formata para exibição
+  const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+  // Atualiza o input com R$
+  event.target.value = `R$ ${valorFormatado}`;
+}
+
 function createNewLancamento() {
     return {
         tipo: 'despesa',
@@ -126,12 +152,12 @@ function updateIntervaloMeses(lancamento) {
                             <InputLabel :for="'valor_' + index" value="Valor" :required="true"/>
                             <TextInput
                                 :id="'valor_' + index"
-                                v-mask-decimal
-                                placeholder="0.00"
-                                v-model="lancamento.valor"
+                                placeholder="R$ 0,00"
+                                :value="lancamento.valor ? `R$ ${lancamento.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''"
                                 class="mt-1 block w-full"
                                 step="0.01"
                                 required
+                                @input="formatarRealLancamento($event, lancamento, 'valor')"
                             />
                             <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.valor`]" />
                         </div>
