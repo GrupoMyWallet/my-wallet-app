@@ -28,12 +28,12 @@ const submit = () => {
             <AuthenticationCardLogo />
         </template>
 
-        <div class="mb-4 text-sm text-gray-600">
+        <div class="mb-4 text-sm text-gray-600 dark:text-slate-400">
             Esqueceu sua senha? Sem problemas. 
             <br>Informe seu e-mail e enviaremos um link para redefinição da senha.
         </div>
 
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
+        <div v-if="status" class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
             {{ status }}
         </div>
 
