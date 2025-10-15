@@ -545,8 +545,9 @@ graph TB
 ### 6.2 Diagrama de Fluxo de Dados
 
 ```mermaid
+%%{init: { 'sequence': {'mirrorActors':false} } }%%
 sequenceDiagram
-    participant U as User
+    actor U as User
     participant V as Vue.js
     participant I as Inertia.js
     participant C as ImportController
