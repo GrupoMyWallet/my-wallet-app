@@ -18,7 +18,7 @@ const props = defineProps({
         
         <span
           v-if="!link.url"
-          class="px-3 py-1 border border-gray-300 rounded text-gray-400 cursor-default select-none"
+          class="px-3 py-1 border border-gray-300 rounded text-gray-400 dark:text-slate-700 cursor-default select-none"
           v-html="link.label"
         ></span>
   
@@ -26,7 +26,7 @@ const props = defineProps({
         <Link
           v-else
           :href="link.url"
-          class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition"
+          class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 dark:hover:bg-slate-900 transition"
           :class="link.active
             ? 'bg-blue-500 text-white border-blue-500'
             : 'bg-white text-gray-700'"

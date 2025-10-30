@@ -15,6 +15,32 @@ const form = useForm({
     lancamentos: [],
 });
 
+function formatarRealLancamento(event, lancamento, fieldName) {
+  // Pega apenas números
+  let valor = event.target.value.replace(/\D/g, '');
+
+  if (!valor) {
+    event.target.value = '';
+    lancamento[fieldName] = '';
+    return;
+  }
+
+  // Divide por 100 para centavos
+  let valorNumerico = parseInt(valor) / 100;
+
+  // Atualiza o v-model com número real
+  lancamento[fieldName] = valorNumerico;
+
+  // Formata para exibição
+  const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+  // Atualiza o input com R$
+  event.target.value = `R$ ${valorFormatado}`;
+}
+
 function createNewLancamento() {
     return {
         tipo: 'despesa',
@@ -86,9 +112,9 @@ function updateIntervaloMeses(lancamento) {
 </script>
 
 <template>
-    <AppLayout title="Lançamentos">
+    <AppLayout title="Lançamentos de Receitas e Despesas">
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-slate-200 leading-tight">
                 Registrar lançamentos
             </h2>
         </template>
@@ -96,12 +122,12 @@ function updateIntervaloMeses(lancamento) {
         <div class="max-w-4xl mx-auto py-6 px-4">
             <form @submit.prevent="submit" class="space-y-4">
                 <div v-for="(lancamento, index) in form.lancamentos" :key="index"
-                    class="border rounded-xl p-4 mb-6 shadow-sm bg-white space-y-4">
+                    class="border rounded-xl p-4 mb-6 shadow-sm bg-white dark:bg-slate-800 space-y-4">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-semibold text-lg">
+                        <h3 class="font-semibold text-lg dark:text-slate-200">
                             Lançamento {{ index + 1 }}
                         </h3>
-                        <button type="button" class="text-red-600 hover:underline text-sm"
+                        <button type="button" class="text-red-600 dark:text-red-400 hover:underline text-sm"
                             v-if="form.lancamentos.length > 1" @click="removeLancamento(index)">
                             Remover
                         </button>
@@ -114,7 +140,7 @@ function updateIntervaloMeses(lancamento) {
                             <select
                                 v-model="lancamento.tipo"
                                 :id="'tipo_' + index"
-                                class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 required>
                                 <option value="" disabled>Selecione...</option>
                                 <option value="despesa">Despesa</option>
@@ -126,12 +152,12 @@ function updateIntervaloMeses(lancamento) {
                             <InputLabel :for="'valor_' + index" value="Valor" :required="true"/>
                             <TextInput
                                 :id="'valor_' + index"
-                                v-mask-decimal
-                                placeholder="0.00"
-                                v-model="lancamento.valor"
+                                placeholder="R$ 0,00"
+                                :value="lancamento.valor ? `R$ ${lancamento.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''"
                                 class="mt-1 block w-full"
                                 step="0.01"
                                 required
+                                @input="formatarRealLancamento($event, lancamento, 'valor')"
                             />
                             <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.valor`]" />
                         </div>
@@ -151,7 +177,7 @@ function updateIntervaloMeses(lancamento) {
                             <select
                                 :id="'categoria_' + index"
                                 v-model="lancamento.categoria_id"
-                                class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 required>
                                 <option value="">Selecione</option>
                                 <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">{{ categoria.nome }}
@@ -182,7 +208,7 @@ function updateIntervaloMeses(lancamento) {
                                 v-model="lancamento.intervalo_selecionado"
                                 :id="'intervalo_meses_select_' + index"
                                 @change="updateIntervaloMeses(lancamento)"
-                                class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 required>
                                 <option value="0">Sem Recorrência</option>
                                 <option value="1">Mensal (1 mês)</option>
@@ -227,21 +253,21 @@ function updateIntervaloMeses(lancamento) {
                                 :id="'esta_ativa_' + index"
                                 v-model="lancamento.esta_ativa"
                                 type="checkbox"
-                                class="lancamento-checkbox h-5 w-5 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm m-1 block"
+                                class="lancamento-checkbox h-5 w-5 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm m-1 block dark:bg-slate-700 dark:border-slate-600"
                             />
-                            <InputLabel :for="'esta_ativa_' + index" value="Está ativa?" class="ml-2 mb-0" /> 
+                            <InputLabel :for="'esta_ativa_' + index" value="Está ativa?" class="ml-2 mb-0 dark:text-slate-300" /> 
                             <InputError class="mt-2" :message="form.errors[`lancamentos.${index}.esta_ativa`]" />
                         </div>
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                    <button type="button" class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-blue-800 transition"
                         @click="addLancamento">
                         + Adicionar Lançamento
                     </button>
 
                     <button type="submit" :disabled="form.processing"
-                        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                        class="bg-green-600 dark:bg-green-700 text-white px-4 py-2 rounded hover:bg-green-700 dark:hover:bg-green-800 transition">
                         Salvar Todos
                     </button>
                 </div>

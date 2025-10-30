@@ -53,7 +53,7 @@ const togglePasswordVisibility = () => {
             <Link :href="'/'"><MyWalletLogo /></Link>
         </template>
 
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
+        <div v-if="status" class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
             {{ status }}
         </div>
 
@@ -88,7 +88,7 @@ const togglePasswordVisibility = () => {
                     <button
                         type="button"
                         @click="togglePasswordVisibility"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300"
                     >
                         <EyeSlashIcon v-if="passwordFieldType === 'password'" class="w-5 h-5" />
                         <EyeIcon v-else class="w-5 h-5" />
@@ -99,18 +99,18 @@ const togglePasswordVisibility = () => {
             <div class="block mt-4">
                 <label class="flex items-center">
                     <Checkbox v-model:checked="form.remember" name="remember" />
-                    <span class="ms-2 text-sm text-gray-600">Continuar Conectado</span>
+                    <span class="ms-2 text-sm text-gray-600 dark:text-slate-400">Continuar Conectado</span>
                 </label>
             </div>
             
             <div class="flex items-center justify-end mt-4">
-                <Link v-if="canResetPassword" :href="route('password.request')" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <Link v-if="canResetPassword" :href="route('password.request')" class="underline text-sm text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800">
                     Esqueceu a senha?
                 </Link>
 
             <div class="flex items-center">
                 <Link :href="route('register')" 
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ms-4">
+                    class="underline text-sm text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 ms-4">
                     Não tem conta? Crie uma
                 </Link>
 
