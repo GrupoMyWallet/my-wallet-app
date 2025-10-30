@@ -21,7 +21,6 @@ class LancamentoController extends Controller
     {
         $this->categoriaRepository = $categoriaRepository;
         $this->lancamentoRepository = $lancamentoRepository;
-        $this->authorizeResource(\App\Models\Lancamento::class, 'lancamento');
     }
 
     public function index(Request $request)
