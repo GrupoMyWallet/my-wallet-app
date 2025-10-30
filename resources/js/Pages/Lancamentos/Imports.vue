@@ -1,15 +1,20 @@
 <script setup>
 import { ref } from "vue";
-import { router } from "@inertiajs/vue3";
+import { useForm } from '@inertiajs/vue3';
 import AppLayout from "@/Layouts/AppLayout.vue";
-import Messages from '@/Components/Messages.vue'
+import Messages from '@/Components/Messages.vue';
 
+defineProps({
+    flash: Object
+});
 
 const statementFiles = ref([]);
-const selectedDocumentType = ref("");
 const isDragOverStatement = ref(false);
-const isProcessing = ref(false);
 
+const form = useForm({
+    files: [],
+    document_type: 'extrato'
+});
 
 const handleStatementFiles = (event) => {
     const files = Array.from(event.target.files);
@@ -20,11 +25,11 @@ const handleStatementDrop = (event) => {
     isDragOverStatement.value = false;
     const files = Array.from(event.dataTransfer.files);
     const validFiles = files.filter(
-        (file) =>
-            file.type.includes("pdf") ||
+        (file) => 
             file.type.includes("csv") ||
-            file.name.endsWith(".pdf") ||
-            file.name.endsWith(".csv")
+            file.type.includes("pdf") ||
+            file.name.endsWith(".csv") ||
+            file.name.endsWith(".pdf")
     );
     statementFiles.value = [...statementFiles.value, ...validFiles];
 };
@@ -33,7 +38,6 @@ const removeStatementFile = (index) => {
     statementFiles.value.splice(index, 1);
 };
 
-// Utilitários
 const formatFileSize = (bytes) => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -42,20 +46,13 @@ const formatFileSize = (bytes) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
-// Função de importação (placeholder - não funcional)
 const importStatements = () => {
-    isProcessing.value = true;
-
-    
-    setTimeout(() => {
-       
-        alert(
-            `Funcionalidade de importação de ${selectedDocumentType.value}s será implementada!`
-        );
-        isProcessing.value = false;
-        statementFiles.value = [];
-        selectedDocumentType.value = "";
-    }, 2000);
+    form.files = statementFiles.value;
+    form.post(route('lancamentos.import.store'), {
+        onSuccess: () => {
+            statementFiles.value = [];
+        }
+    });
 };
 </script>
 
@@ -80,6 +77,10 @@ const importStatements = () => {
                     </p>
                 </div>
 
+                <!-- Resultado JSON -->
+                <pre v-if="$page.props.flash.success" class="mb-6 bg-black text-green-400 p-4 rounded overflow-auto">{{ JSON.stringify($page.props.flash.success, null, 2) }}</pre>
+                <pre v-if="$page.props.flash.error" class="mb-6 bg-black text-red-400 p-4 rounded overflow-auto">{{ JSON.stringify($page.props.flash.error, null, 2) }}</pre>
+
                 <!-- Card de Importação -->
                 <div class="bg-gray-50 dark:bg-slate-700 rounded-lg border border-gray-200 dark:border-slate-600 overflow-hidden mb-6">
                     <div class="p-4">
@@ -103,18 +104,27 @@ const importStatements = () => {
 
                         <div class="space-y-6">
                             <!-- Seletor de Tipo -->
-                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                                    Tipo de Documento
+                                </label>
+                                <select v-model="form.document_type" 
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-200">
+                                    <option value="extrato">Extrato Bancário</option>
+                                    <option value="fatura">Fatura de Cartão</option>
+                                </select>
+                            </div>
 
                             <!-- Upload Area -->
                             <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer bg-white dark:bg-slate-800"
                                 :class="{
                                     'border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500':
                                         isDragOverStatement,
-                                }" @dragover.prevent="
-                                    isDragOverStatement = true
-                                    " @dragleave.prevent="
-                                    isDragOverStatement = false
-                                    " @drop.prevent="handleStatementDrop" @click="$refs.statementInput.click()">
+                                }" 
+                                @dragover.prevent="isDragOverStatement = true" 
+                                @dragleave.prevent="isDragOverStatement = false" 
+                                @drop.prevent="handleStatementDrop" 
+                                @click="$refs.statementInput.click()">
                                 <svg class="mx-auto h-16 w-16 text-gray-400 dark:text-slate-500" stroke="currentColor" fill="none"
                                     viewBox="0 0 48 48">
                                     <path
@@ -142,17 +152,12 @@ const importStatements = () => {
                                     Arquivos selecionados:
                                 </h4>
                                 <div class="space-y-2 max-h-48 overflow-y-auto">
-                                    <div v-for="(
-file, index
-                                        ) in statementFiles" :key="index"
+                                    <div v-for="(file, index) in statementFiles" :key="index"
                                         class="flex items-center justify-between p-3 bg-white dark:bg-slate-700 rounded-lg border shadow-sm dark:border-slate-600">
                                         <div class="flex items-center min-w-0 flex-1">
                                             <div class="flex-shrink-0">
-                                                <svg v-if="
-                                                    file.name.endsWith(
-                                                        '.pdf'
-                                                    )
-                                                " class="h-6 w-6 text-red-600" fill="currentColor"
+                                                <svg v-if="file.name.endsWith('.pdf')" 
+                                                    class="h-6 w-6 text-red-600" fill="currentColor"
                                                     viewBox="0 0 20 20">
                                                     <path d="M4 18h12V6l-4-4H4v16zm8-14v4h4l-4-4z" />
                                                 </svg>
@@ -167,19 +172,12 @@ file, index
                                                     {{ file.name }}
                                                 </p>
                                                 <p class="text-xs text-gray-500 dark:text-slate-400">
-                                                    {{
-                                                        formatFileSize(
-                                                            file.size
-                                                        )
-                                                    }}
+                                                    {{ formatFileSize(file.size) }}
                                                 </p>
                                             </div>
                                         </div>
-                                        <button @click="
-                                            removeStatementFile(
-                                                index
-                                            )
-                                            " class="ml-3 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors">
+                                        <button @click="removeStatementFile(index)" 
+                                            class="ml-3 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors">
                                             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd"
                                                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -192,20 +190,12 @@ file, index
 
                             <!-- Botão de Importar -->
                             <div class="flex justify-end">
-                                <button :disabled="statementFiles.length === 0 ||isProcessing"
+                                <button 
+                                    :disabled="statementFiles.length === 0 || form.processing"
                                     class="bg-blue-600 dark:bg-blue-700 text-white py-3 px-6 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800 disabled:bg-gray-300 dark:disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors font-medium"
                                     @click="importStatements">
-                                    <span v-if="!isProcessing">
-                                        Importar
-                                        {{
-                                            selectedDocumentType ===
-                                                "extrato"
-                                                ? "Extratos"
-                                                : selectedDocumentType ===
-                                                    "fatura"
-                                                    ? "Faturas"
-                                                    : "Documentos"
-                                        }}
+                                    <span v-if="!form.processing">
+                                        Importar {{ form.document_type === "extrato" ? "Extratos" : "Faturas" }}
                                     </span>
                                     <span v-else class="flex items-center">
                                         <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -249,19 +239,15 @@ file, index
                                     • Extratos de conta corrente ou
                                     poupança e Faturas
                                 </li>
-                                
                                 <li>
                                     • Principais bancos brasileiros
                                     suportados
                                 </li>
                             </ul>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
-            
-        
     </AppLayout>
 </template>

@@ -75,16 +75,19 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./api:/home/appuser/app
-    environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONDONTWRITEBYTECODE=1
+    restart: unless-stopped
+    expose:
+      - "8000"
+    env_file:
+      - .env
     networks:
       - mywallet-development
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   postgres:
     image: postgres:16

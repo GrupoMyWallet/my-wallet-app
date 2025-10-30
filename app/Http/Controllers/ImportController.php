@@ -65,7 +65,7 @@ class ImportController extends Controller
             
             // Processa cada arquivo
             foreach ($request->file('files') as $file) {
-                $result = $this->pythonApi->processFile(
+                $result = $this->pythonApi->processarArquivo(
                     $file,
                     ['document_type' => $request->input('document_type')]
                 );
@@ -77,7 +77,7 @@ class ImportController extends Controller
                 ];
             }
 
-            return redirect()->route('lancamentos.import')->with('result', [
+            return redirect()->route('lancamentos.import')->with('success', [
                 'success' => true,
                 'message' => 'Arquivos processados com sucesso',
                 'total_files' => count($results),

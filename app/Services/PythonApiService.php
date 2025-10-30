@@ -42,20 +42,51 @@ class PythonApiService
     public function processarArquivo(UploadedFile $file, array $options = []): array
     {
         try {
-            $response = Http::withHeaders($this->getHeaders())
+            Log::info('Enviando arquivo para API Python', [
+                'filename' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+                'url' => "{$this->baseUrl}/api/v1/brasil"
+            ]);
+            
+            $response = Http::withHeaders([
+                'X-API-Key' => $this->apiKey,
+            ])
             ->timeout($this->timeout)
             ->attach('file', file_get_contents($file->getRealPath()), $file->getClientOriginalName())
-            ->post("{$this->baseUrl}/processarArqu", $options);
+            ->post("{$this->baseUrl}/api/v1/brasil", $options);
 
-            if ($response->failed()) {
-                throw new Exception("Erro na API Python: " . $response->body());
+            Log::info('Resposta da API Python', [
+                'status' => $response->status(),
+                'headers' => $response->headers(),
+                'body' => $response->body()
+            ]);
+
+            // Verifica se a resposta é vazia
+            if (empty($response->body())) {
+                throw new Exception("API Python retornou resposta vazia");
             }
 
-            return $response->json();
+            if ($response->failed()) {
+                $errorBody = $response->json();
+                $errorMessage = $errorBody['detail'] ?? $response->body();
+                throw new Exception("Erro na API Python: " . $errorMessage);
+            }
+
+            $data = $response->json();
+            
+            // Verifica se retornou dados
+            if (empty($data)) {
+                throw new Exception("API Python não retornou dados");
+            }
+
+            return $data;
+            
         } catch (Exception $e) {
             Log::error('Erro ao processar arquivo na API Python', [
                 'error' => $e->getMessage(),
-                'file' => $file->getClientOriginalName()
+                'file' => $file->getClientOriginalName(),
+                'trace' => $e->getTraceAsString()
             ]);
             throw $e;
         }
