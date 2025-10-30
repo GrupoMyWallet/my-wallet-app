@@ -71,6 +71,21 @@ services:
     networks:
       - mywallet-development
 
+  python-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/home/appuser/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    networks:
+      - mywallet-development
+    restart: unless-stopped
+
   postgres:
     image: postgres:16
     ports:
