@@ -13,7 +13,7 @@ Este documento descreve a arquitetura do sistema de gerenciamento financeiro pes
 - **Authentication/Authorization:** Laravel Jetstream  
 - **Containerization:** Docker
 - **File Processing Service:** API Python (Flask/FastAPI)
-- **Development Environment:** Docker Compose
+- **Development Environment:**A Docker Compose
 
 ### 1.2 Objetivos Arquiteturais
 
@@ -22,6 +22,8 @@ Este documento descreve a arquitetura do sistema de gerenciamento financeiro pes
 - **Escalabilidade:** A arquitetura está preparada para crescimento horizontal, permitindo a adição de recursos conforme a demanda aumenta.
 - **Experiência do Usuário:** Uma interface dinâmica e responsiva, com Vue.js, garante interações fluidas e uma experiência atraente para o usuário.
 - **Segurança:** A implementação de práticas robustas, utilizando Jetstream, assegura a proteção dos dados e a integridade do sistema.
+
+<div style="page-break-before: always;"></div>
 
 ## 2. Arquitetura Laravel + Inertia.js + Vue.js
 
@@ -37,13 +39,15 @@ Este documento descreve a arquitetura do sistema de gerenciamento financeiro pes
 
 O Inertia.js atua como uma ponte entre o Laravel (backend) e Vue.js (frontend), eliminando a necessidade de uma API REST tradicional e proporcionando:
 
-#### Características Principais:
+#### Características Principais
+
 - **Roteamento Server-Side:** Utiliza as rotas do Laravel
 - **Sem Endpoints de API:** Comunicação direta através de controllers
 - **SPA Experience:** Navegação sem reload de página
 - **Renderização Server-Side:** Renderização inicial no servidor
 
-#### Fluxo de Dados:
+#### Fluxo de Dados
+
 1. **Request:** Browser faz requisição para rota Laravel
 2. **Processamento:** Controller processa a requisição usando Services/Repositories
 3. **Responses:** Controller retorna dados via `Inertia::render()`
@@ -51,7 +55,8 @@ O Inertia.js atua como uma ponte entre o Laravel (backend) e Vue.js (frontend), 
 
 ### 2.3 Integração Vue.js
 
-#### Componentes Vue.js:
+#### Componentes Vue.js
+
 ```javascript
 // Exemplo de um componente de filtro no vue
 <script setup>
@@ -101,12 +106,13 @@ function onReset() {
 ```
 
 #### Características da Integração:
+
 - **Dados reativos:** Vue.js gerencia reatividade no frontend
 - **Component-Based:** Arquitetura componentizada reutilizável
 - **Comunicação de dados via props:** Dados passados via props do Inertia
 - **Eventos:** Eventos Vue.js integrados com formulários Inertia
 
----
+<div style="page-break-before: always;"></div>
 
 ## 3. Arquitetura em Camadas
 
@@ -124,6 +130,7 @@ function onReset() {
 ### 3.2 Responsabilidades das Camadas
 
 #### **Views (Vue.js)**
+
 - **Responsabilidade:** Interface do usuário e experiência do usuário
 - **Componentes:**
   - Formulários de lançamentos e outras coisass relacionadas
@@ -131,6 +138,7 @@ function onReset() {
   - Navegação e layout
 
 #### **Controller (Laravel)**
+
 - **Responsabilidade:** Coordenação entre requisições HTTP e lógica de negócios
 - **Funções:**
   - Validação de requests
@@ -169,6 +177,7 @@ class LancamentoController extends Controller
 ```
 
 #### **Services**
+
 - **Responsabilidade:** Lógica de negócios e orquestração de diferentes repositories
 - **Funções:**
   - Regras de negócio complexas
@@ -178,6 +187,7 @@ class LancamentoController extends Controller
 
 
 #### **Repository Layer**
+
 - **Responsabilidade:** Abstração de acesso a dados
 - **Funções:**
   - Queries complexas
@@ -229,13 +239,14 @@ class LancamentoRepository
 ```
 
 #### **Model Layer**
+
 - **Responsabilidade:** Representação de entidades e relacionamentos
 - **Funções:**
   - Definição de relacionamentos
   - Scopes
   - Validações de modelo
 
----
+<div style="page-break-before: always;"></div>
 
 ## 4. Comunicação com API Python
 
@@ -253,6 +264,7 @@ class LancamentoRepository
 ### 4.2 Fluxo de Processamento de Extratos
 
 #### Etapa 1: Upload no Laravel
+
 ```php
 class ImportController extends Controller
 {
@@ -285,7 +297,10 @@ class ImportController extends Controller
 }
 ```
 
+<div style="page-break-before: always;"></div>
+
 #### Etapa 2: Processamento na API Python
+
 ```python
 from fastapi import APIRouter
 from fastapi import File, UploadFile
@@ -297,8 +312,6 @@ from api.V1.funcoes_banco import csv_brasil_para_dict, criar_df_brasil
 
 router = APIRouter()
 
-
-
 class LancamentoBB(BaseModel):
     data: Optional[str]  # Changed to str to match the output
     descricao: str
@@ -307,29 +320,25 @@ class LancamentoBB(BaseModel):
     valor: float
     tipo_lancamento: Optional[str]
 
-
 @router.post(
     "/brasil",
     summary="Extrato Banco do Brasil",
     description="Recebe um arquivo CSV do Banco do Brasil e retorna um JSON estruturado",
     response_model=list[LancamentoBB]
 )
+
 async def bb_file_to_json(file: UploadFile = File(...)):
     try:
         content = await file.read()
-
         if file.content_type in ["text/csv", "application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
 
             df = criar_df_brasil(file, content)
-
             if df.empty:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="O arquivo enviado ou e do tipo errado ou não contém dados válidos."
                 )
-
             return csv_brasil_para_dict(df)
-
 
     except Exception as e:
         logging.error(f"Erro ao processar arquivo: {e}", exc_info=True)
@@ -339,7 +348,6 @@ async def bb_file_to_json(file: UploadFile = File(...)):
         )
 ```
 
-
 ### 4.3 Benefícios da Arquitetura com um Serviço em Python
 
 - **Especialização:** Python especializado em processamento de arquivos
@@ -347,7 +355,7 @@ async def bb_file_to_json(file: UploadFile = File(...)):
 - **Tecnologia Apropriada:** Python para data processing, Laravel para web app
 - **Manutenibilidade:** Código especializado em cada tecnologia
 
----
+<div style="page-break-before: always;"></div>
 
 ## 5. Estrutura de Diretórios do Projeto Laravel
 
@@ -479,24 +487,31 @@ mywallet-app/
 └── README.md
 ```
 
+<div style="page-break-before: always;"></div>
+
 ### 5.1 Descrição dos Diretórios Principais
 
 #### **app/Http/Controllers/**
+
 Controladores responsáveis por gerenciar as requisições HTTP e coordenar com os services.
 
 #### **app/Repositories/**
+
 Camada de abstração para acesso aos dados, implementando padrões de repository.
 
 #### **app/Services/**
+
 Lógica de negócios e orquestração entre diferentes repositories e APIs externas.
 
 #### **resources/js/Components/**
+
 Componentes Vue.js reutilizáveis organizados por funcionalidade.
 
 #### **resources/js/Pages/**
+
 Páginas principais da aplicação que utilizam os componentes.
 
----
+<div style="page-break-before: always;"></div>
 
 ## 6. Diagramas de Arquitetura
 
@@ -504,71 +519,75 @@ Páginas principais da aplicação que utilizam os componentes.
 
 ```mermaid
 graph TB
-    subgraph "Frontend Layer"
-        A[Vue.js Components]
+    subgraph "Camada Frontend"
+        A[Componentes Vue.js]
         B[Inertia.js]
     end
     
-    subgraph "Laravel Application"
-        C[Routes]
+    subgraph "Aplicação Laravel"
+        C[Rotas]
         D[Controllers]
         E[Services]
         F[Repositories]
         G[Models]
     end
     
-    subgraph "External Services"
-        H[Python File Processing API]
+    subgraph "Serviços Externos"
+        H[API de Processamento de Arquivos Python]
     end
     
-    subgraph "Database"
+    subgraph "Banco de Dados"
         I[(PostgreSQL)]
     end
     
-    subgraph "Authentication"
+    subgraph "Autenticação"
         J[Jetstream]
     end
     
-    A -->|User Interaction| B
-    B -->|HTTP Request| C
-    C -->|Route Resolution| D
-    D -->|Business Logic| E
-    E -->|Data Access| F
+    A -->|Interação do Usuário| B
+    B -->|Requisição HTTP| C
+    C -->|Resolução de Rota| D
+    D -->|Lógica de Negócios| E
+    E -->|Acesso a Dados| F
     F -->|ORM| G
-    G -->|Query| I
-    E -->|File Processing| H
-    D -->|Auth Check| J
-    D -->|Inertia Response| B
-    B -->|Component Update| A
+    G -->|Consulta| I
+    E -->|Processamento de Arquivo| H
+    D -->|Verificação de Autenticação| J
+    D -->|Response Inertia| B
+    B -->|Atualização do Componente| A
 ```
 
 ### 6.2 Diagrama de Fluxo de Dados
 
-```mermaid
-%%{init: { 'sequence': {'mirrorActors':false} } }%%
-sequenceDiagram
-    actor U as User
-    participant V as Vue.js
-    participant I as Inertia.js
-    participant C as ImportController
-    participant S as Service
-    participant R as LancamentoRepository
-    participant DB as PostgreSQL
-    participant API as Python API
-    
-    U->>V: Upload Extrato Bancário
-    V->>I: Form Submit
-    I->>C: POST /lancamentos/import
-    C->>API: POST /api/v1/brasil
-    API-->>C: JSON Lançamentos
-    C->>R: bulkCreateLancamentos()
-    R->>DB: INSERT lancamentos
-    DB-->>R: Success
-    R-->>C: Lançamentos Criados
-    C->>I: Inertia Response
-    I->>V: Update Component
-    V-->>U: Success Message
-```
+@startuml
+    !theme plain
+
+    actor User
+    participant "Vue.js" as Vue
+    participant "Inertia.js" as Inertia
+    participant "ImportController" as Controller
+    participant "Service" as Service
+    participant "LancamentoRepository" as Repository
+    database "PostgreSQL" as DB
+    participant "Python API" as API
+
+    User -> Vue : Upload Extrato Bancário
+    Vue -> Inertia : Form Submit
+    Inertia -> Controller : POST /lancamentos/import
+    Controller -> API : POST /api/v1/brasil
+    API --> Controller : JSON Lançamentos
+    Controller -> Repository : bulkCreateLancamentos()
+    Repository -> DB : INSERT lancamentos
+    DB --> Repository : Success
+    Repository --> Controller : Lançamentos Criados
+    Controller --> Inertia : Inertia Response
+    Inertia --> Vue : Update Component
+    Vue --> User : Success Message
+
+    hide footbox
+@enduml
+
+<div style="page-break-before: always;"></div>
 
 ### 6.3 Diagrama de Relacionamento de Entidades
 
@@ -644,14 +663,16 @@ erDiagram
     CATEGORIAS ||--o{ ORCAMENTOS : limits
 ```
 
----
+<div style="page-break-before: always;"></div>
 
 ## 7. Padrões de Design Implementados
 
 ### 7.1 Repository Pattern
+
 **Objetivo:** Abstrair a camada de acesso a dados e centralizar queries complexas.
 
 **Implementação:**
+
 ```php
 class LancamentoRepository
 {
@@ -690,273 +711,114 @@ class LancamentoRepository
         }
 
         return $query->paginate($paginas);
-
     }
 }
 ```
 
 ### 7.2 Service Layer Pattern
+
 **Objetivo:** Centralizar lógica de negócios e coordenar operações complexas.
 
 ### 7.3 Injestão de depenência
+
 **Objetivo:** Facilitar testes e manter baixo acoplamento entre componentes.
 
 ### 7.4 Principio de Responsabilidade Única
+
 **Objetivo:** Cada classe tem uma única responsabilidade bem definida.
 
----
+<div style="page-break-before: always;"></div>
 
 ## 8. Considerações de Segurança
 
 ### 8.1 Autenticação e Autorização
+
 - **Jetstream:** Gerenciamento completo de autenticação
 - **Sanctum:** API tokens para comunicação com serviços externos
 - **Policies:** Controle granular de acesso a recursos
 
 ### 8.2 Comunicação Segura
+
 - **HTTPS:** Comunicação criptografada
 - **API Keys:** Autenticação entre Laravel e Python API
 
----
+## 9. Deploy e DevOps
 
-## 9. Deployment e DevOps
+### 9.1 Containerização com Docker
 
-### 9.1 Containerização
-```dockerfile
-FROM php:8.2-fpm AS builder
+A aplicação está totalmente dockerizada, utilizando uma arquitetura baseada em containers que garante consistência entre ambientes de desenvolvimento e produção. O sistema é composto por múltiplas imagens Docker especializadas:
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    unzip \
-    nodejs \
-    npm \
-    libpq-dev \
-    libonig-dev \
-    libssl-dev \
-    libxml2-dev \
-    libcurl4-openssl-dev \
-    libicu-dev \
-    libzip-dev \
-    && docker-php-ext-install -j$(nproc) \
-    pdo_mysql \
-    pdo_pgsql \
-    pgsql \
-    opcache \
-    intl \
-    zip \
-    bcmath \
-    soap \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#### Imagens Docker:
 
-WORKDIR /var/www
+1. **Web Server Container (Nginx)**
 
-COPY . /var/www
+- Servidor web Nginx para servir assets estáticos
+- Proxy reverso para PHP-FPM
+- Configuração SSL/TLS com Let's Encrypt
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
+2. **PHP-FPM Application Container**
 
-RUN npm install && npm run build
+- PHP-FPM com extensões necessárias
+- Código da aplicação Laravel
+- Health checks para monitoramento
 
-FROM php:8.2-fpm AS production
+3. **PHP-CLI Container**
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev \
-    libicu-dev \
-    libzip-dev \
-    libfcgi-bin \
-    procps \
-    && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+- Interface de linha de comando para tarefas administrativas
+- Execução de migrations e seeders
+- Jobs e comandos Artisan
 
-RUN curl -o /usr/local/bin/php-fpm-healthcheck \
-    https://raw.githubusercontent.com/renatomefi/php-fpm-healthcheck/master/php-fpm-healthcheck \
-    && chmod +x /usr/local/bin/php-fpm-healthcheck
+4. **PostgreSQL Database Container**
 
-COPY ./docker/production/php-fpm/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+- Banco de dados relacional PostgreSQL 15
+- Volumes persistentes para dados
+- Health checks e configurações otimizadas
 
+5. **Redis Container**
 
-COPY ./storage /var/www/storage-init
+- Cache em memória para sessões e jobs
+- Melhoria de performance da aplicação
 
-COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
-COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
-COPY --from=builder /usr/local/bin/docker-php-ext-* /usr/local/bin/
+6. **Certbot Container**
 
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+- Renovação automática de certificados SSL
+- Integração com Let's Encrypt
 
+### 9.2 Orquestração com Docker Compose
 
-RUN sed -i '/\[www\]/a pm.status_path = /status' /usr/local/etc/php-fpm.d/zz-docker.conf
+A comunicação e orquestração entre os containers é gerenciada pelo Docker Compose, que define toda a infraestrutura como código e facilita o deploy em diferentes ambientes.
 
-COPY --from=builder /var/www /var/www
+### 9.3 Benefícios da Arquitetura Dockerizada
 
-WORKDIR /var/www
+- **Portabilidade:** Ambiente consistente em qualquer infraestrutura
+- **Isolamento:** Cada serviço opera em seu próprio container
+- **Escalabilidade:** Fácil replicação de containers conforme demanda
+- **Manutenção:** Atualizações isoladas sem afetar outros serviços
+- **Monitoramento:** Health checks garantem disponibilidade dos serviços
+- **Segurança:** SSL/TLS automático com renovação de certificados
 
-RUN chown -R www-data:www-data /var/www
+### 9.4 Rede e Comunicação entre Containers
 
-USER www-data
+Os containers comunicam-se através de uma rede Docker privada (`mywallet-production`), onde:
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+- O **Nginx** atua como proxy reverso para o **PHP-FPM**
+- O **PHP-FPM** acessa o **PostgreSQL** pelo hostname `postgres`
+- O **Redis** fornece cache para a aplicação Laravel
+- O **Certbot** renova automaticamente certificados SSL
+- Portas expostas apenas quando necessário para acesso externo
+- Variáveis de ambiente gerenciam configurações sensíveis via arquivo env
+- Health checks garantem que serviços dependentes estejam saudáveis antes da inicialização
 
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
+### 9.5 CI/CD com GitHub Actions
 
-# Builds a dev-only layer on top of the production image
-FROM production AS development
+O sistema implementa um pipeline de CI/CD automatizado utilizando GitHub Actions, garantindo deploys seguros e consistentes através de dois workflows principais: build.yaml e deploy.yaml, 
 
-# Use ARGs to define environment variables passed from the Docker build command or Docker Compose.
-ARG XDEBUG_ENABLED=true
-ARG XDEBUG_MODE=develop,coverage,debug,profile
-ARG XDEBUG_HOST=host.docker.internal
-ARG XDEBUG_IDE_KEY=DOCKER
-ARG XDEBUG_LOG=/dev/stdout
-ARG XDEBUG_LOG_LEVEL=0
+- **GitHub Container Registry (GHCR):** Armazenamento seguro e versionado das imagens Docker
+- **Automação Completa:** Deploy automático a cada push na branch main
+- **Rollback Facilitado:** Possibilidade de reverter para versões anteriores rapidamente
+- **Limpeza Automática:** Remoção de containers e imagens antigas para economizar espaço
 
-USER root
-
-# Configure Xdebug if enabled
-RUN if [ "${XDEBUG_ENABLED}" = "true" ]; then \
-    pecl install xdebug && \
-    docker-php-ext-enable xdebug && \
-    echo "xdebug.mode=${XDEBUG_MODE}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
-    echo "xdebug.idekey=${XDEBUG_IDE_KEY}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
-    echo "xdebug.log=${XDEBUG_LOG}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
-    echo "xdebug.log_level=${XDEBUG_LOG_LEVEL}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
-    echo "xdebug.client_host=${XDEBUG_HOST}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ; \
-    echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ; \
-fi
-
-# Add ARGs for syncing permissions
-ARG UID=1000
-ARG GID=1000
-
-# Create a new user with the specified UID and GID, reusing an existing group if GID exists
-RUN if getent group ${GID}; then \
-      group_name=$(getent group ${GID} | cut -d: -f1); \
-      useradd -m -u ${UID} -g ${GID} -s /bin/bash www; \
-    else \
-      groupadd -g ${GID} www && \
-      useradd -m -u ${UID} -g www -s /bin/bash www; \
-      group_name=www; \
-    fi
-
-# Dynamically update php-fpm to use the new user and group
-RUN sed -i "s/user = www-data/user = www/g" /usr/local/etc/php-fpm.d/www.conf && \
-    sed -i "s/group = www-data/group = $group_name/g" /usr/local/etc/php-fpm.d/www.conf
-
-
-# Set the working directory
-WORKDIR /var/www
-
-# Copy the entrypoint script
-COPY ./docker/development/php-fpm/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-# Switch back to the non-privileged user to run the application
-USER www-data
-
-# Change the default command to run the entrypoint script
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
-```
-
-### 9.2 Docker Compose
-```yaml
-services:
-  web:
-    image: ghcr.io/grupomywallet/my-wallet-app/web:latest
-    restart: unless-stopped
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - ./certbot/www:/var/www/certbot:ro
-      - mywallet-storage-production:/var/www/storage:ro
-    networks:
-      - mywallet-production
-    ports:
-      - "${NGINX_PORT:-80}:80"
-      - "443:443"
-    depends_on:
-      php-fpm:
-        condition: service_healthy
-
-  php-fpm:
-    
-    image: ghcr.io/grupomywallet/my-wallet-app/php-fpm:latest
-    restart: unless-stopped
-    volumes:
-      - mywallet-storage-production:/var/www/storage 
-    env_file:
-      - .env
-    networks:
-      - mywallet-production
-    healthcheck:
-      test: ["CMD-SHELL", "php-fpm-healthcheck || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    depends_on:
-      postgres:
-        condition: service_healthy
-  php-cli:
-    image: ghcr.io/grupomywallet/my-wallet-app/php-cli:latest
-    tty: true 
-    stdin_open: true 
-    env_file:
-      - .env
-    networks:
-      - mywallet-production
-
-  postgres:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    ports:
-      - "${DB_PORT}:5432"
-    environment:
-      POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - mywallet-production
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${DB_USERNAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  certbot:
-    image: certbot/certbot
-    container_name: mywallet_certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-
-  redis:
-    image: redis:alpine
-    restart: unless-stopped 
-    networks:
-      - mywallet-production
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-networks:
-  mywallet-production:
-
-volumes:
-  postgres-data:
-  mywallet-storage-production:
-```
-
----
+<div style="page-break-before: always;"></div>
 
 ## 10. Conclusão
 
@@ -974,7 +836,6 @@ Esta arquitetura proporciona uma base sólida para o sistema mywallet, combinand
 
 - **Implementação de testes automatizados**
 - **Backup automatizado do banco de dados**
-
 
 *Documento criado em: 19/05/2025*  
 *Versão: 1.0*  

@@ -21,6 +21,7 @@ class LancamentoController extends Controller
     {
         $this->categoriaRepository = $categoriaRepository;
         $this->lancamentoRepository = $lancamentoRepository;
+        $this->authorizeResource(\App\Models\Lancamento::class, 'lancamento');
     }
 
     public function index(Request $request)
@@ -70,6 +71,7 @@ class LancamentoController extends Controller
 
     public function update(UpdateLancamentoRequest $request, $id)
     {
+        $this->authorize('update', $meta);
         try {
             $dados = $request->validated(); // Mutators on model will handle date formats
 
