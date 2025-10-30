@@ -16,7 +16,6 @@ services:
         condition: service_healthy
 
   php-fpm:
-    
     image: ghcr.io/grupomywallet/my-wallet-app/php-fpm:latest
     restart: unless-stopped
     volumes:
@@ -33,6 +32,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
   php-cli:
     image: ghcr.io/grupomywallet/my-wallet-app/php-cli:latest
     tty: true 
@@ -41,6 +41,22 @@ services:
       - .env
     networks:
       - mywallet-production
+  
+  python-api:
+    image: ghcr.io/grupomywallet/my-wallet-app/python-api:latest
+    restart: unless-stopped
+    expose:
+      - "8000"
+    env_file:
+      - .env
+    networks:
+      - mywallet-production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   postgres:
     image: postgres:15-alpine

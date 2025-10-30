@@ -67,7 +67,6 @@ jobs:
           cache-to: type=registry,ref=ghcr.io/${{ steps.repo.outputs.repository }}/php-cli:buildcache,mode=max
 
       - name: Build and push API (python) image
-        if: false  # Dockerfile da api está quebrada, depois de arrumar, remover esta linha
         uses: docker/build-push-action@v5
         with:
           # contexto na pasta api (Dockerfile está em api/Dockerfile)
