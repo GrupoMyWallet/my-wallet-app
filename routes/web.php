@@ -62,11 +62,8 @@ Route::middleware([
     Route::get('/lancamentos/import', [ImportController::class, 'index'])
         ->name('lancamentos.import');
 
-    Route::post('/lancamentos/import/spreadsheets', [ImportController::class, 'importSpreadsheets'])
-        ->name('lancamentos.import.spreadsheets');
-
-    Route::post('/lancamentos/import/statements', [ImportController::class, 'importStatements'])
-        ->name('lancamentos.import.statements');
+    Route::post('/lancamentos/import', [ImportController::class, 'importArquivo'])
+        ->name('lancamentos.import.store');
 
     Route::get('/lancamentos/import/template', [ImportController::class, 'downloadTemplate'])
         ->name('lancamentos.import.template');

@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PythonApiService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ImportController extends Controller
 {
+    protected PythonApiService $pythonApi;
+
+    public function __construct(PythonApiService $pythonApi)
+    {
+        $this->pythonApi = $pythonApi;
+    }
+
     /**
      * Exibe a tela de importação de lançamentos
      */
@@ -44,23 +52,45 @@ class ImportController extends Controller
     /**
      * Processa a importação de extratos/faturas (PDF/CSV)
      */
-    public function importStatements(Request $request)
+    public function importArquivo(Request $request)
     {
         $request->validate([
             'files' => 'required|array',
-            'files.*' => 'file|mimes:pdf,csv|max:20480', // 20MB max
-            'document_type' => 'required|in:extrato,fatura',
+            'files.*' => 'file|mimes:pdf,csv|max:20480',
+            'document_type' => 'required|in:extrato,fatura'
         ]);
 
-        // TODO: Implementar lógica de importação de extratos/faturas
-        // - Processar arquivos PDF (OCR/parsing)
-        // - Processar arquivos CSV de bancos
-        // - Extrair transações dos documentos
-        // - Categorizar automaticamente
-        // - Importar dados para o banco
-        // - Retornar resultado da importação
+        try {
+            $results = [];
+            
+            // Processa cada arquivo
+            foreach ($request->file('files') as $file) {
+                $result = $this->pythonApi->processFile(
+                    $file,
+                    ['document_type' => $request->input('document_type')]
+                );
+                
+                $results[] = [
+                    'filename' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'result' => $result
+                ];
+            }
 
-        return redirect()->route('lancamentos.import')->with('error', 'Essa funcionalidade ainda será implementada. Tente novamente em breve.');
+            return redirect()->route('lancamentos.import')->with('result', [
+                'success' => true,
+                'message' => 'Arquivos processados com sucesso',
+                'total_files' => count($results),
+                'document_type' => $request->input('document_type'),
+                'data' => $results
+            ]);
+            
+        } catch (\Exception $e) {
+            return redirect()->route('lancamentos.import')->with('error',[
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function downloadTemplate()
