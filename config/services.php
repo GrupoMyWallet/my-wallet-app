@@ -16,6 +16,7 @@ return [
     
     'python_api' => [
         'url' => env('PYTHON_API_URL', 'http://python-api:8000'),
+        'key' => env('PYTHON_API_KEY'),
     ],
 
     'postmark' => [
