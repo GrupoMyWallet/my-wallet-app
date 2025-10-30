@@ -43,7 +43,7 @@ services:
       - mywallet-production
   
   python-api:
-    image: ghcr.io/grupomywallet/my-wallet-app/python-api:latest
+    image: ghcr.io/grupomywallet/my-wallet-app/api:latest
     restart: unless-stopped
     expose:
       - "8000"
