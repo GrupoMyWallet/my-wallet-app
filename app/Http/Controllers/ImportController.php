@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Services\PythonApiService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class ImportController extends Controller
 {
@@ -49,9 +51,6 @@ class ImportController extends Controller
         return redirect()->route('lancamentos.import')->with('error', 'Essa funcionalidade ainda será implementada. Tente novamente em breve.');
     }
 
-    /**
-     * Processa a importação de extratos/faturas (PDF/CSV)
-     */
     public function importArquivo(Request $request)
     {
         $request->validate([
@@ -60,35 +59,68 @@ class ImportController extends Controller
             'document_type' => 'required|in:extrato,fatura'
         ]);
 
+        DB::beginTransaction();
+
         try {
-            $results = [];
-            
+            $resultsForRedirect = [];
+            $lancamentosParaCriar = []; // 1. Array para preparar os dados para o createMany
+
             // Processa cada arquivo
             foreach ($request->file('files') as $file) {
-                $result = $this->pythonApi->processarArquivo(
+                $apiResult = $this->pythonApi->processarArquivo(
                     $file,
                     ['document_type' => $request->input('document_type')]
                 );
+
+                // Itera sobre cada lançamento retornado pela API para o arquivo
+                foreach ($apiResult as $lancamentoData) {
+                    if (str_contains($lancamentoData['descricao'], 'BB Rende')) {
+                        continue;
+                    }
+
+                    $data = ($lancamentoData['data'] == null) ? Carbon::now()->format('Y-m-d') : Carbon::createFromFormat('d/m/Y H:i', $lancamentoData['data'])->format('Y-m-d');
+                    $valor = $lancamentoData['valor'];
+                    if ($valor < 0) {
+                        $valor = abs($valor); // Converte para positivo
+                    }
+
+                    $lancamentosParaCriar[] = [
+                        // 'user_id' não é necessário aqui, pois a relação já o adicionará
+                        'tipo' => ($lancamentoData['tipo_lancamento'] == 'Entrada') ? 'receita' : 'despesa',
+                        'valor' => $valor,
+                        'descricao' => $lancamentoData['descricao'],
+                        'categoria_id' => null, 
+                        'data' => $data,
+                        'esta_ativa' => true,
+                    ];
+                }
                 
-                $results[] = [
+                // Mantém o resultado original para enviar no redirect
+                $resultsForRedirect[] = [
                     'filename' => $file->getClientOriginalName(),
                     'size' => $file->getSize(),
-                    'result' => $result
+                    'result' => $apiResult
                 ];
             }
 
+            // 3. Verifica se há lançamentos para criar antes de chamar o banco
+            if (!empty($lancamentosParaCriar)) {
+                $user = $request->user();
+                $user->lancamentos()->createMany($lancamentosParaCriar);
+            }
+
+            DB::commit();
+
             return redirect()->route('lancamentos.import')->with('success', [
                 'success' => true,
-                'message' => 'Arquivos processados com sucesso',
-                'total_files' => count($results),
-                'document_type' => $request->input('document_type'),
-                'data' => $results
+                'message' => count($lancamentosParaCriar) . ' lançamentos importados com sucesso!',
             ]);
             
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->route('lancamentos.import')->with('error',[
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Ocorreu um erro ao importar os arquivos: ' . $e->getMessage()
             ], 500);
         }
     }
